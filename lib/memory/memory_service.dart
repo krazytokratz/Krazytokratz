@@ -4,6 +4,7 @@ import 'memory_model.dart';
 import 'memory_priority.dart';
 import 'memory_category.dart';
 import 'persistent_memory.dart';
+import 'memory_intelligence.dart';
 
 
 
@@ -18,20 +19,56 @@ class MemoryService {
 
 
 
+  final MemoryIntelligence intelligence =
+      MemoryIntelligence();
+
+
+
+
 
 
   // ==========================
-  // TEMPORARY MEMORY OBJECT
+  // SMART MEMORY SAVE
   // ==========================
 
 
   void saveMemory(
+
     Memory memory,
+
   ) {
 
-    _memories.add(memory);
+
+    final exists =
+        intelligence.existsSimilar(
+          _memories,
+          memory.content,
+        );
+
+
+
+    if(exists) {
+
+
+      debugPrint(
+        "Kraz Memory duplicate detected",
+      );
+
+
+      return;
+
+    }
+
+
+
+    _memories.add(
+      memory,
+    );
+
 
   }
+
+
 
 
 
@@ -39,87 +76,147 @@ class MemoryService {
 
   List<Memory> getAllMemories() {
 
+
     return List.unmodifiable(
       _memories,
     );
 
+
   }
+
+
 
 
 
 
 
   List<Memory> findByCategory(
+
     MemoryCategory category,
+
   ) {
 
-    return _memories
-        .where(
-          (memory) =>
-              memory.category == category,
-        )
-        .toList();
+
+    return intelligence.filterByCategory(
+
+      _memories,
+
+      category,
+
+    );
+
 
   }
+
+
 
 
 
 
 
   List<Memory> getImportantMemories(
+
     MemoryPriority minimumPriority,
+
   ) {
 
+
     final minimumScore =
+
         MemoryPriorityConfig.getScore(
+
           minimumPriority,
+
         );
 
 
+
     return _memories
+
         .where(
+
           (memory) =>
+
               memory.importance >= minimumScore,
+
         )
+
         .toList();
 
+
   }
+
+
 
 
 
 
 
   List<Memory> search(
+
     String keyword,
+
   ) {
 
-    return _memories
-        .where(
-          (memory) =>
-              memory.content
-                  .toLowerCase()
-                  .contains(
-                    keyword.toLowerCase(),
-                  ),
-        )
-        .toList();
+
+    return intelligence.search(
+
+      _memories,
+
+      keyword,
+
+    );
+
 
   }
+
+
+
+
+
+
+
+  Memory? getMostRelevant(
+
+    List<Memory> memories,
+
+  ) {
+
+
+    return intelligence.getMostRelevant(
+
+      memories,
+
+    );
+
+
+  }
+
+
 
 
 
 
 
   void deleteMemory(
+
     String id,
+
   ) {
 
+
     _memories.removeWhere(
+
       (memory) =>
+
           memory.id == id,
+
     );
 
+
   }
+
+
 
 
 
@@ -127,11 +224,16 @@ class MemoryService {
 
   Future<void> clearAll() async {
 
+
     _memories.clear();
+
 
     await persistentMemory.clear();
 
+
   }
+
+
 
 
 
@@ -139,9 +241,13 @@ class MemoryService {
 
   int get memoryCount {
 
+
     return _memories.length;
 
+
   }
+
+
 
 
 
@@ -149,9 +255,13 @@ class MemoryService {
 
   bool get isEmpty {
 
+
     return _memories.isEmpty;
 
+
   }
+
+
 
 
 
@@ -159,9 +269,13 @@ class MemoryService {
 
   bool get isNotEmpty {
 
+
     return _memories.isNotEmpty;
 
+
   }
+
+
 
 
 
@@ -174,18 +288,21 @@ class MemoryService {
   // ==========================
 
 
-
-
-
   Future<void> remember(
+
     String key,
+
     String value,
+
   ) async {
 
 
     await persistentMemory.save(
+
       key,
+
       value,
+
     );
 
 
@@ -198,12 +315,16 @@ class MemoryService {
 
 
   Future<String?> recall(
+
     String key,
+
   ) async {
 
 
     return await persistentMemory.read(
+
       key,
+
     );
 
 
@@ -216,12 +337,16 @@ class MemoryService {
 
 
   Future<bool> knows(
+
     String key,
+
   ) async {
 
 
     return await persistentMemory.exists(
+
       key,
+
     );
 
 
@@ -242,17 +367,28 @@ class MemoryService {
 
 
     final savedName =
+
         await recall(
+
           "user_name",
+
         );
 
 
 
-    if(savedName != null && savedName.isNotEmpty) {
+    if(
+
+      savedName != null &&
+
+      savedName.isNotEmpty
+
+    ) {
 
 
       debugPrint(
+
         "Kraz remembers user: $savedName",
+
       );
 
 
@@ -260,6 +396,7 @@ class MemoryService {
 
 
   }
+
 
 
 }
