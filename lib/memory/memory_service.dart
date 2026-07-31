@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
+
 import 'memory_model.dart';
 import 'memory_priority.dart';
 import 'memory_category.dart';
-import 'memory_storage.dart';
+import 'persistent_memory.dart';
 
 
 
@@ -11,14 +13,20 @@ class MemoryService {
   final List<Memory> _memories = [];
 
 
-  final MemoryStorage storage =
-      MemoryStorage();
+  final PersistentMemory persistentMemory =
+      PersistentMemory();
 
 
+
+
+
+  // ==========================
+  // TEMPORARY MEMORY OBJECT
+  // ==========================
 
 
   void saveMemory(
-      Memory memory
+    Memory memory,
   ) {
 
     _memories.add(memory);
@@ -41,97 +49,75 @@ class MemoryService {
 
 
 
-
   List<Memory> findByCategory(
-      MemoryCategory category
+    MemoryCategory category,
   ) {
-
 
     return _memories
         .where(
-
           (memory) =>
               memory.category == category,
-
         )
         .toList();
 
-
   }
-
-
 
 
 
 
 
   List<Memory> getImportantMemories(
-      MemoryPriority minimumPriority
+    MemoryPriority minimumPriority,
   ) {
-
 
     final minimumScore =
         MemoryPriorityConfig.getScore(
-            minimumPriority
+          minimumPriority,
         );
 
 
     return _memories
         .where(
-
           (memory) =>
               memory.importance >= minimumScore,
-
         )
         .toList();
 
-
   }
-
-
 
 
 
 
 
   List<Memory> search(
-      String keyword
+    String keyword,
   ) {
-
 
     return _memories
         .where(
-
           (memory) =>
               memory.content
-              .toLowerCase()
-              .contains(
-                keyword.toLowerCase(),
-              ),
-
+                  .toLowerCase()
+                  .contains(
+                    keyword.toLowerCase(),
+                  ),
         )
         .toList();
 
-
   }
-
 
 
 
 
 
   void deleteMemory(
-      String id
+    String id,
   ) {
 
-
     _memories.removeWhere(
-
       (memory) =>
           memory.id == id,
-
     );
-
 
   }
 
@@ -139,16 +125,13 @@ class MemoryService {
 
 
 
-
-  void clearAll() {
+  Future<void> clearAll() async {
 
     _memories.clear();
 
-    storage.clear();
+    await persistentMemory.clear();
 
   }
-
-
 
 
 
@@ -164,15 +147,11 @@ class MemoryService {
 
 
 
-
-
   bool get isEmpty {
 
     return _memories.isEmpty;
 
   }
-
-
 
 
 
@@ -190,19 +169,21 @@ class MemoryService {
 
 
 
-  // ============================
-  // KRAZ PERSONAL MEMORY
-  // ============================
+  // ==========================
+  // KRAZ LONG TERM MEMORY
+  // ==========================
 
 
 
-  void remember(
-      String key,
-      String value,
-  ) {
 
 
-    storage.save(
+  Future<void> remember(
+    String key,
+    String value,
+  ) async {
+
+
+    await persistentMemory.save(
       key,
       value,
     );
@@ -216,12 +197,12 @@ class MemoryService {
 
 
 
-  String? recall(
-      String key,
-  ) {
+  Future<String?> recall(
+    String key,
+  ) async {
 
 
-    return storage.read(
+    return await persistentMemory.read(
       key,
     );
 
@@ -234,18 +215,51 @@ class MemoryService {
 
 
 
-  bool knows(
-      String key,
-  ) {
+  Future<bool> knows(
+    String key,
+  ) async {
 
 
-    return storage.contains(
+    return await persistentMemory.exists(
       key,
     );
 
 
   }
 
+
+
+
+
+
+
+  // ==========================
+  // LOAD MEMORY WHEN STARTING
+  // ==========================
+
+
+  Future<void> loadMemory() async {
+
+
+    final savedName =
+        await recall(
+          "user_name",
+        );
+
+
+
+    if(savedName != null && savedName.isNotEmpty) {
+
+
+      debugPrint(
+        "Kraz remembers user: $savedName",
+      );
+
+
+    }
+
+
+  }
 
 
 }

@@ -7,6 +7,10 @@ import 'core/kraz_identity.dart';
 import 'memory/memory_service.dart';
 import 'conversation/conversation_engine.dart';
 import 'avatar/kraz_avatar.dart';
+import 'memory/user_profile.dart';
+import 'memory/memory_analyzer.dart';
+import 'memory/profile_storage.dart';
+import 'conversation/conversation_engine.dart';
 
 
 
@@ -190,11 +194,7 @@ class _HomePageState extends State<HomePage> {
 
 
     engine =
-        ConversationEngine(
-          memoryService,
-        );
-
-
+        
   }
 
 
@@ -264,7 +264,7 @@ class _HomePageState extends State<HomePage> {
 
 
 
-  void sendMessage() {
+  Future<void> sendMessage() async {
 
 
     final input =
@@ -286,15 +286,21 @@ class _HomePageState extends State<HomePage> {
       avatarState =
           KrazState.thinking;
 
+
     });
 
 
 
 
 
+    controller.clear();
+
+
+
+
 
     final result =
-        engine.respond(
+        await engine.respond(
           input,
         );
 
@@ -311,9 +317,6 @@ class _HomePageState extends State<HomePage> {
           result;
 
 
-      controller.clear();
-
-
     });
 
 
@@ -321,13 +324,14 @@ class _HomePageState extends State<HomePage> {
 
 
 
-    speak(
+
+    await speak(
       result,
     );
 
 
 
-  }
+}
 
 
 

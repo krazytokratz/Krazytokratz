@@ -1,102 +1,155 @@
-import '../memory/memory_service.dart';
 import '../core/kraz_identity.dart';
+
+import '../memory/memory_service.dart';
+import '../memory/user_profile.dart';
+import '../memory/memory_analyzer.dart';
+import '../memory/profile_storage.dart';
+
+
 
 class ConversationEngine {
 
 
+
   final MemoryService memoryService;
 
+  final UserProfile userProfile;
 
-  ConversationEngine(
-    this.memoryService,
-  );
+  final MemoryAnalyzer analyzer;
+
+  final ProfileStorage profileStorage;
 
 
 
-  String respond(
+
+
+  ConversationEngine({
+
+    required this.memoryService,
+
+    required this.userProfile,
+
+    required this.analyzer,
+
+    required this.profileStorage,
+
+  });
+
+
+
+
+
+
+
+
+  Future<String> respond(
     String input,
-  ) {
-
-
-    final message = input.toLowerCase();
+  ) async {
 
 
 
-    // =========================
-    // IDENTITY
-    // =========================
-
-    if (message.contains("siapa kamu")) {
-
-      return KrazIdentity.introduction();
-
-    }
+    final message =
+        input.trim();
 
 
 
 
-    // =========================
-    // SAVE USER NAME
-    // =========================
 
-    if (message.startsWith("nama saya")) {
-
-
-      final name =
-          input
-          .substring(9)
-          .trim();
+    // ==========================
+    // ANALYZE MEMORY
+    // ==========================
 
 
-
-      if (name.isNotEmpty) {
-
-
-        memoryService.remember(
-          "user_name",
-          name,
+    final learned =
+        analyzer.analyze(
+          message,
         );
 
 
+
+    if(learned) {
+
+
+      await profileStorage.saveProfile(
+        userProfile,
+      );
+
+
+      return
+      "Baik. Saya memahami informasi tersebut "
+      "dan akan mengingatnya.";
+
+    }
+
+
+
+
+
+
+
+    // ==========================
+    // ASK PROFILE
+    // ==========================
+
+
+    final lower =
+        message.toLowerCase();
+
+
+
+
+    if(
+      lower.contains(
+        "siapa nama saya",
+      )
+    ) {
+
+
+      if(userProfile.name != null) {
+
+
         return
-        "Baik. Saya akan mengingat nama Anda $name.";
+        "Nama Anda adalah "
+        "${userProfile.name}. "
+        "Saya masih mengingatnya.";
+
 
       }
 
 
+      return
+      "Maaf, saya belum mengetahui nama Anda.";
+
+
     }
 
 
 
 
 
-    // =========================
-    // RECALL USER NAME
-    // =========================
 
-    if (
-      message.contains("siapa nama saya")
+
+    if(
+      lower.contains(
+        "saya bekerja dimana",
+      )
     ) {
 
 
-      final name =
-          memoryService.recall(
-            "user_name",
-          );
-
-
-
-      if (name != null) {
+      if(userProfile.company != null) {
 
 
         return
-        "Nama Anda adalah $name.";
+        "Anda bekerja di "
+        "${userProfile.company}.";
+
 
       }
 
 
       return
-      "Saya belum mengetahui nama Anda.";
+      "Saya belum memiliki informasi perusahaan Anda.";
+
 
     }
 
@@ -104,52 +157,24 @@ class ConversationEngine {
 
 
 
-    // =========================
-    // MEMORY CHECK
-    // =========================
-
-    if (
-      message.contains("apa yang kamu ingat")
-    ) {
-
-
-      final name =
-          memoryService.recall(
-            "user_name",
-          );
 
 
 
-      if (name != null) {
+    // ==========================
+    // IDENTITY
+    // ==========================
 
 
-        return
-        "Saya mengingat nama Anda $name.";
-
-      }
-
-
-
-      return
-      "Saat ini memory saya masih kosong.";
-
-    }
-
-
-
-
-
-    // =========================
-    // STATUS
-    // =========================
-
-    if (
-      message.contains("apa kabar")
+    if(
+      lower.contains(
+        "siapa kamu",
+      )
     ) {
 
 
       return
-      "Saya baik. Sistem Kraz berjalan normal.";
+      KrazIdentity.introduction();
+
 
     }
 
@@ -157,18 +182,24 @@ class ConversationEngine {
 
 
 
-    // =========================
-    // PROJECT
-    // =========================
 
-    if (
-      message.contains("proyek")
+
+
+    // ==========================
+    // PROFILE SUMMARY
+    // ==========================
+
+
+    if(
+      lower.contains(
+        "profil saya",
+      )
     ) {
 
 
       return
-      "Kita sedang membangun Kraz AI Assistant "
-      "dengan sistem memory dan personality.";
+      userProfile.summary();
+
 
     }
 
@@ -176,17 +207,14 @@ class ConversationEngine {
 
 
 
-    // =========================
-    // DEFAULT RESPONSE
-    // =========================
 
 
     return
     "Saya memahami pesan Anda. "
     "Mari kita lanjutkan percakapan.";
 
-
   }
+
 
 
 }

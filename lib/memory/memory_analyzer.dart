@@ -1,101 +1,240 @@
-import 'memory_category.dart';
-import 'memory_priority.dart';
+import 'user_profile.dart';
 
 
 class MemoryAnalyzer {
 
 
-  static MemoryCategory detectCategory(
-      String text
+
+  final UserProfile userProfile;
+
+
+
+  MemoryAnalyzer(
+    this.userProfile,
+  );
+
+
+
+
+
+
+  // ==========================
+  // ANALYZE USER MESSAGE
+  // ==========================
+
+
+  bool analyze(
+    String message,
   ) {
 
 
     final input =
-        text.toLowerCase();
+        message.toLowerCase().trim();
 
 
-    if(input.contains("nama") ||
-       input.contains("saya adalah")) {
 
-      return MemoryCategory.identity;
+
+
+    // ======================
+    // NAME DETECTION
+    // ======================
+
+
+    if(
+      input.startsWith(
+        "nama saya",
+      )
+    ) {
+
+
+      final name =
+          message
+              .substring(9)
+              .trim();
+
+
+
+      if(name.isNotEmpty) {
+
+
+        userProfile.updateName(
+          name,
+        );
+
+
+        return true;
+
+      }
+
 
     }
 
 
-    if(input.contains("suka") ||
-       input.contains("preferensi")) {
 
-      return MemoryCategory.preference;
+
+
+
+
+    // ======================
+    // JOB DETECTION
+    // ======================
+
+
+    if(
+      input.contains(
+        "saya bekerja sebagai",
+      )
+    ) {
+
+
+      final job =
+          message
+              .toLowerCase()
+              .replaceFirst(
+                "saya bekerja sebagai",
+                "",
+              )
+              .trim();
+
+
+
+      if(job.isNotEmpty) {
+
+
+        userProfile.updateOccupation(
+          job,
+        );
+
+
+        return true;
+
+      }
+
 
     }
 
 
-    if(input.contains("project") ||
-       input.contains("proyek")) {
 
-      return MemoryCategory.project;
+
+
+
+
+
+    // ======================
+    // COMPANY DETECTION
+    // ======================
+
+
+    if(
+      input.contains(
+        "saya bekerja di",
+      )
+    ) {
+
+
+      final company =
+          message
+              .toLowerCase()
+              .replaceFirst(
+                "saya bekerja di",
+                "",
+              )
+              .trim();
+
+
+
+      if(company.isNotEmpty) {
+
+
+        userProfile.updateCompany(
+          company,
+        );
+
+
+        return true;
+
+      }
+
 
     }
 
 
-    if(input.contains("kerjakan") ||
-       input.contains("tugas")) {
 
-      return MemoryCategory.task;
+
+
+
+
+
+    // ======================
+    // INTEREST DETECTION
+    // ======================
+
+
+    if(
+      input.contains(
+        "saya tertarik",
+      )
+    ) {
+
+
+      final interest =
+          message
+              .replaceFirst(
+                RegExp(
+                  "saya tertarik",
+                  caseSensitive: false,
+                ),
+                "",
+              )
+              .trim();
+
+
+
+      if(interest.isNotEmpty) {
+
+
+        userProfile.updateInterest(
+          interest,
+        );
+
+
+        return true;
+
+      }
+
 
     }
 
 
-    return MemoryCategory.conversation;
+
+
+
+
+    return false;
+
 
   }
 
 
 
-  static MemoryPriority detectPriority(
-      MemoryCategory category
-  ) {
 
 
-    switch(category) {
+
+  // ==========================
+  // PROFILE INFORMATION
+  // ==========================
 
 
-      case MemoryCategory.identity:
-
-        return MemoryPriority.critical;
+  String getProfileSummary() {
 
 
-      case MemoryCategory.project:
+    return userProfile.summary();
 
-        return MemoryPriority.high;
-
-
-      case MemoryCategory.preference:
-
-        return MemoryPriority.high;
-
-
-      case MemoryCategory.knowledge:
-
-        return MemoryPriority.medium;
-
-
-      case MemoryCategory.task:
-
-        return MemoryPriority.medium;
-
-
-      case MemoryCategory.conversation:
-
-        return MemoryPriority.low;
-
-
-      case MemoryCategory.temporary:
-
-        return MemoryPriority.low;
-
-    }
 
   }
+
+
+
+
 
 }
