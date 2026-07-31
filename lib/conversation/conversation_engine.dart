@@ -1,45 +1,7 @@
 import '../core/kraz_identity.dart';
 
-import '../memory/memory_service.dart';
-import '../memory/user_profile.dart';
-import '../memory/memory_analyzer.dart';
-import '../memory/profile_storage.dart';
-
-
 
 class ConversationEngine {
-
-
-
-  final MemoryService memoryService;
-
-  final UserProfile userProfile;
-
-  final MemoryAnalyzer analyzer;
-
-  final ProfileStorage profileStorage;
-
-
-
-
-
-  ConversationEngine({
-
-    required this.memoryService,
-
-    required this.userProfile,
-
-    required this.analyzer,
-
-    required this.profileStorage,
-
-  });
-
-
-
-
-
-
 
 
   Future<String> respond(
@@ -47,116 +9,8 @@ class ConversationEngine {
   ) async {
 
 
-
     final message =
-        input.trim();
-
-
-
-
-
-    // ==========================
-    // ANALYZE MEMORY
-    // ==========================
-
-
-    final learned =
-        analyzer.analyze(
-          message,
-        );
-
-
-
-    if(learned) {
-
-
-      await profileStorage.saveProfile(
-        userProfile,
-      );
-
-
-      return
-      "Baik. Saya memahami informasi tersebut "
-      "dan akan mengingatnya.";
-
-    }
-
-
-
-
-
-
-
-    // ==========================
-    // ASK PROFILE
-    // ==========================
-
-
-    final lower =
-        message.toLowerCase();
-
-
-
-
-    if(
-      lower.contains(
-        "siapa nama saya",
-      )
-    ) {
-
-
-      if(userProfile.name != null) {
-
-
-        return
-        "Nama Anda adalah "
-        "${userProfile.name}. "
-        "Saya masih mengingatnya.";
-
-
-      }
-
-
-      return
-      "Maaf, saya belum mengetahui nama Anda.";
-
-
-    }
-
-
-
-
-
-
-
-    if(
-      lower.contains(
-        "saya bekerja dimana",
-      )
-    ) {
-
-
-      if(userProfile.company != null) {
-
-
-        return
-        "Anda bekerja di "
-        "${userProfile.company}.";
-
-
-      }
-
-
-      return
-      "Saya belum memiliki informasi perusahaan Anda.";
-
-
-    }
-
-
-
-
-
+        input.toLowerCase().trim();
 
 
 
@@ -164,17 +18,30 @@ class ConversationEngine {
     // IDENTITY
     // ==========================
 
+    if(message.contains("siapa kamu")) {
+
+      return KrazIdentity.introduction();
+
+    }
+
+
+
+
+
+    // ==========================
+    // GREETING
+    // ==========================
 
     if(
-      lower.contains(
-        "siapa kamu",
-      )
+      message.contains("halo") ||
+      message.contains("hai") ||
+      message.contains("selamat")
     ) {
 
 
       return
-      KrazIdentity.introduction();
-
+      "Halo. Saya Kraz.\n"
+      "Senang berbicara dengan Anda.";
 
     }
 
@@ -183,23 +50,17 @@ class ConversationEngine {
 
 
 
-
-
     // ==========================
-    // PROFILE SUMMARY
+    // PROJECT
     // ==========================
 
-
-    if(
-      lower.contains(
-        "profil saya",
-      )
-    ) {
+    if(message.contains("proyek")) {
 
 
       return
-      userProfile.summary();
-
+      "Saat ini saya sedang dikembangkan "
+      "sebagai Personal AI Assistant "
+      "Krazytokratz.";
 
     }
 
@@ -208,13 +69,17 @@ class ConversationEngine {
 
 
 
+    // ==========================
+    // DEFAULT
+    // ==========================
 
     return
-    "Saya memahami pesan Anda. "
-    "Mari kita lanjutkan percakapan.";
+    "Saya memahami pesan Anda.\n"
+    "Saya masih dalam tahap pengembangan "
+    "Genesis v0.1.";
+
 
   }
-
 
 
 }
