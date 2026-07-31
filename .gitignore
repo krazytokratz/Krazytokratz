@@ -47,5 +47,5 @@ app.*.map.json
 # Local environment
 .env
 
-# Local backup
+# Kraz backup files
 backup/

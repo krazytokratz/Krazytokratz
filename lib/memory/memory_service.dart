@@ -1,16 +1,14 @@
 import 'memory_model.dart';
 import 'memory_priority.dart';
+import 'memory_category.dart';
 
 
 class MemoryService {
 
-  // Temporary memory storage
   final List<Memory> _memories = [];
 
 
-  /*
-   * Menyimpan memory baru
-   */
+  // Menyimpan memory baru
   void saveMemory(Memory memory) {
 
     _memories.add(memory);
@@ -18,9 +16,7 @@ class MemoryService {
   }
 
 
-  /*
-   * Mengambil seluruh memory
-   */
+  // Mengambil semua memory
   List<Memory> getAllMemories() {
 
     return List.unmodifiable(_memories);
@@ -28,26 +24,22 @@ class MemoryService {
   }
 
 
-  /*
-   * Mencari memory berdasarkan kategori
-   */
-  List<Memory> findByCategory(String category) {
+  // Mencari memory berdasarkan kategori
+  List<Memory> findByCategory(
+      MemoryCategory category
+  ) {
 
     return _memories
         .where(
           (memory) =>
-              memory.category.toLowerCase()
-              ==
-              category.toLowerCase(),
+              memory.category == category,
         )
         .toList();
 
   }
 
 
-  /*
-   * Mengambil memory berdasarkan tingkat kepentingan
-   */
+  // Mengambil memory berdasarkan tingkat kepentingan
   List<Memory> getImportantMemories(
       MemoryPriority minimumPriority
   ) {
@@ -68,10 +60,10 @@ class MemoryService {
   }
 
 
-  /*
-   * Mencari memory berdasarkan kata kunci
-   */
-  List<Memory> search(String keyword) {
+  // Pencarian berdasarkan kata kunci
+  List<Memory> search(
+      String keyword
+  ) {
 
     return _memories
         .where(
@@ -87,10 +79,10 @@ class MemoryService {
   }
 
 
-  /*
-   * Menghapus memory berdasarkan ID
-   */
-  void deleteMemory(String id) {
+  // Menghapus memory berdasarkan ID
+  void deleteMemory(
+      String id
+  ) {
 
     _memories.removeWhere(
       (memory) =>
@@ -100,9 +92,7 @@ class MemoryService {
   }
 
 
-  /*
-   * Menghapus seluruh memory
-   */
+  // Menghapus seluruh memory
   void clearAll() {
 
     _memories.clear();
@@ -110,9 +100,7 @@ class MemoryService {
   }
 
 
-  /*
-   * Jumlah memory tersimpan
-   */
+  // Jumlah memory
   int get memoryCount {
 
     return _memories.length;
@@ -120,9 +108,7 @@ class MemoryService {
   }
 
 
-  /*
-   * Mengecek apakah memory kosong
-   */
+  // Apakah kosong?
   bool get isEmpty {
 
     return _memories.isEmpty;
@@ -130,9 +116,7 @@ class MemoryService {
   }
 
 
-  /*
-   * Mengecek apakah memory tersedia
-   */
+  // Apakah memiliki isi?
   bool get isNotEmpty {
 
     return _memories.isNotEmpty;
