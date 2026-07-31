@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/kraz_identity.dart';
+import 'conversation/conversation_engine.dart';
 
 
 Future<void> main() async {
@@ -13,9 +14,11 @@ Future<void> main() async {
     fileName: ".env",
   );
 
+
   debugPrint(
     "Initializing ${KrazIdentity.name} v${KrazIdentity.version}",
   );
+
 
   runApp(
     const KrazApp(),
@@ -51,13 +54,16 @@ class KrazApp extends StatelessWidget {
 
       ),
 
-      home: const KrazDashboard(),
+
+      home:
+          const KrazDashboard(),
 
     );
 
   }
 
 }
+
 
 
 
@@ -78,6 +84,7 @@ class KrazDashboard extends StatefulWidget {
 
 
 
+
 class _KrazDashboardState
     extends State<KrazDashboard> {
 
@@ -86,9 +93,21 @@ class _KrazDashboardState
       FlutterTts();
 
 
+  final ConversationEngine engine =
+      ConversationEngine();
 
-  Future<void> bicara() async {
 
+  final TextEditingController controller =
+      TextEditingController();
+
+
+
+  final List<String> messages = [];
+
+
+
+
+  Future<void> speak(String text) async {
 
     await tts.setLanguage(
       "id-ID",
@@ -106,6 +125,20 @@ class _KrazDashboardState
 
 
     await tts.speak(
+      text,
+    );
+
+  }
+
+
+
+
+
+
+  Future<void> bicara() async {
+
+
+    await speak(
 
       "Halo. Saya Kraz. "
       "Sistem inti saya aktif. "
@@ -118,21 +151,62 @@ class _KrazDashboardState
 
 
 
-  void memoryCheck() {
 
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+  void sendMessage() async {
 
-      const SnackBar(
 
-        content: Text(
-          "Memory System: Foundation Ready",
-        ),
+    if(controller.text.trim().isEmpty){
 
-      ),
+      return;
 
+    }
+
+
+
+    String userMessage =
+        controller.text;
+
+
+
+    String response =
+        engine.respond(
+          userMessage,
+        );
+
+
+
+
+    setState(() {
+
+
+      messages.add(
+
+        "Anda: $userMessage",
+
+      );
+
+
+
+      messages.add(
+
+        "Kraz: $response",
+
+      );
+
+
+
+      controller.clear();
+
+
+    });
+
+
+
+    await speak(
+      response,
     );
+
 
   }
 
@@ -140,22 +214,60 @@ class _KrazDashboardState
 
 
 
+
+  void memoryCheck(){
+
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+
+      const SnackBar(
+
+        content:
+
+        Text(
+          "Memory System: Foundation Ready",
+        ),
+
+      ),
+
+    );
+
+
+  }
+
+
+
+
+
+
+
   Widget statusCard(
+
       IconData icon,
+
       String title,
+
       String status,
-  ) {
+
+      ){
 
 
     return Card(
+
 
       color:
           const Color(0xFF13293D),
 
 
-      child: ListTile(
 
-        leading: Icon(
+      child:
+
+      ListTile(
+
+        leading:
+
+        Icon(
 
           icon,
 
@@ -165,12 +277,18 @@ class _KrazDashboardState
         ),
 
 
-        title: Text(
+
+        title:
+
+        Text(
           title,
         ),
 
 
-        subtitle: Text(
+
+        subtitle:
+
+        Text(
           status,
         ),
 
@@ -178,7 +296,9 @@ class _KrazDashboardState
 
     );
 
+
   }
+
 
 
 
@@ -191,22 +311,36 @@ class _KrazDashboardState
 
     return Scaffold(
 
-      body: SafeArea(
 
-        child: Padding(
+      body:
+
+      SafeArea(
+
+
+        child:
+
+        Padding(
+
 
           padding:
-              const EdgeInsets.all(24),
+
+          const EdgeInsets.all(24),
 
 
-          child: Column(
+
+          child:
+
+          Column(
+
 
             children: [
 
 
+
               const SizedBox(
-                height: 20,
+                height:20,
               ),
+
 
 
 
@@ -214,7 +348,7 @@ class _KrazDashboardState
 
                 Icons.smart_toy,
 
-                size: 90,
+                size:80,
 
                 color:
                     Colors.lightBlueAccent,
@@ -225,8 +359,9 @@ class _KrazDashboardState
 
 
               const SizedBox(
-                height: 15,
+                height:10,
               ),
+
 
 
 
@@ -235,14 +370,16 @@ class _KrazDashboardState
 
                 "KRAZ",
 
-                style: TextStyle(
+                style:
 
-                  fontSize: 42,
+                TextStyle(
+
+                  fontSize:42,
 
                   fontWeight:
                       FontWeight.bold,
 
-                  letterSpacing: 6,
+                  letterSpacing:6,
 
                 ),
 
@@ -255,9 +392,11 @@ class _KrazDashboardState
 
                 "Personal AI Assistant",
 
-                style: TextStyle(
+                style:
 
-                  fontSize: 18,
+                TextStyle(
+
+                  fontSize:18,
 
                   color:
                       Colors.white70,
@@ -270,22 +409,22 @@ class _KrazDashboardState
 
 
               const SizedBox(
-                height: 20,
+                height:10,
               ),
 
 
 
 
-              Text(
+              const Text(
 
                 "ONLINE",
 
-                style: TextStyle(
+                style:
+
+                TextStyle(
 
                   color:
                       Colors.greenAccent,
-
-                  fontSize: 16,
 
                   fontWeight:
                       FontWeight.bold,
@@ -297,10 +436,10 @@ class _KrazDashboardState
 
 
 
-
               const SizedBox(
-                height: 30,
+                height:20,
               ),
+
 
 
 
@@ -317,6 +456,7 @@ class _KrazDashboardState
 
 
 
+
               statusCard(
 
                 Icons.psychology,
@@ -326,6 +466,7 @@ class _KrazDashboardState
                 "Active",
 
               ),
+
 
 
 
@@ -342,82 +483,254 @@ class _KrazDashboardState
 
 
 
-              const Spacer(),
-
-
-
-
-              SizedBox(
-
-                width:
-                    double.infinity,
-
-
-                child: ElevatedButton.icon(
-
-                  onPressed:
-                      bicara,
-
-
-                  icon:
-                      const Icon(
-                        Icons.mic,
-                      ),
-
-
-                  label:
-                      const Text(
-                        "Berbicara Dengan Kraz",
-                      ),
-
-                ),
-
-              ),
-
-
-
 
               const SizedBox(
-                height: 12,
+                height:15,
               ),
 
 
 
 
-              SizedBox(
 
-                width:
-                    double.infinity,
+
+              Expanded(
 
 
                 child:
-                    OutlinedButton.icon(
 
-                  onPressed:
-                      memoryCheck,
+                ListView.builder(
 
 
-                  icon:
-                      const Icon(
-                        Icons.memory,
+                  itemCount:
+                      messages.length,
+
+
+
+                  itemBuilder:
+
+                  (context,index){
+
+
+                    return Padding(
+
+
+                      padding:
+
+                      const EdgeInsets.all(8),
+
+
+
+                      child:
+
+                      Text(
+
+                        messages[index],
+
+                        style:
+
+                        const TextStyle(
+
+                          fontSize:16,
+
+                        ),
+
                       ),
 
 
-                  label:
-                      const Text(
-                        "Cek Memory",
-                      ),
+                    );
+
+
+                  },
+
 
                 ),
 
+
               ),
+
+
+
+
+
+
+              Row(
+
+
+                children:[
+
+
+
+                  Expanded(
+
+
+                    child:
+
+                    TextField(
+
+
+                      controller:
+                          controller,
+
+
+
+                      decoration:
+
+                      const InputDecoration(
+
+
+                        hintText:
+                        "Ketik pesan untuk Kraz",
+
+
+                      ),
+
+
+                    ),
+
+
+                  ),
+
+
+
+
+
+                  IconButton(
+
+
+                    onPressed:
+                    sendMessage,
+
+
+
+                    icon:
+
+                    const Icon(
+                      Icons.send,
+                    ),
+
+
+                  ),
+
+
+                ],
+
+
+              ),
+
+
 
 
 
 
               const SizedBox(
-                height: 20,
+                height:10,
               ),
+
+
+
+
+
+
+              SizedBox(
+
+                width:
+                    double.infinity,
+
+
+
+                child:
+
+                ElevatedButton.icon(
+
+
+                  onPressed:
+                  bicara,
+
+
+
+                  icon:
+
+                  const Icon(
+                    Icons.mic,
+                  ),
+
+
+
+                  label:
+
+                  const Text(
+                    "Berbicara Dengan Kraz",
+                  ),
+
+
+
+                ),
+
+
+              ),
+
+
+
+
+
+
+              const SizedBox(
+                height:8,
+              ),
+
+
+
+
+
+
+              SizedBox(
+
+                width:
+                    double.infinity,
+
+
+
+                child:
+
+                OutlinedButton.icon(
+
+
+                  onPressed:
+                  memoryCheck,
+
+
+
+                  icon:
+
+                  const Icon(
+                    Icons.memory,
+                  ),
+
+
+
+                  label:
+
+                  const Text(
+                    "Cek Memory",
+                  ),
+
+
+
+                ),
+
+
+              ),
+
+
+
+
+
+
+              const SizedBox(
+                height:10,
+              ),
+
+
 
 
 
@@ -426,28 +739,38 @@ class _KrazDashboardState
 
                 "Kraz Foundation ${KrazIdentity.version}",
 
+
                 style:
 
-                    const TextStyle(
+                const TextStyle(
 
-                      color:
-                          Colors.white38,
+                  color:
+                      Colors.white38,
 
-                    ),
+                ),
+
 
               ),
 
 
+
+
             ],
+
 
           ),
 
+
         ),
+
 
       ),
 
+
     );
 
+
   }
+
 
 }
