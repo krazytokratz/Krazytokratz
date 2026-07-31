@@ -2,65 +2,103 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+
 import 'core/kraz_identity.dart';
+import 'memory/memory_service.dart';
 import 'conversation/conversation_engine.dart';
+import 'avatar/kraz_avatar.dart';
+
+
+
 
 
 Future<void> main() async {
 
+
   WidgetsFlutterBinding.ensureInitialized();
+
+
 
   await dotenv.load(
     fileName: ".env",
   );
 
 
+
   debugPrint(
-    "Initializing ${KrazIdentity.name} v${KrazIdentity.version}",
+    "Initializing ${KrazIdentity.fullName} "
+    "(${KrazIdentity.name}) "
+    "v${KrazIdentity.version}",
   );
+
 
 
   runApp(
     const KrazApp(),
   );
+
+
 }
 
 
 
+
+
+
+
 class KrazApp extends StatelessWidget {
+
 
   const KrazApp({
     super.key,
   });
 
 
+
+
+
   @override
   Widget build(BuildContext context) {
 
+
     return MaterialApp(
+
 
       debugShowCheckedModeBanner: false,
 
+
       title: "Kraz",
+
+
 
       theme: ThemeData(
 
-        brightness: Brightness.dark,
+
+        brightness:
+            Brightness.dark,
+
 
         scaffoldBackgroundColor:
-            const Color(0xFF081018),
+            const Color(0xFF0D1B2A),
 
-        useMaterial3: true,
+
+        useMaterial3:
+            true,
+
 
       ),
 
 
+
       home:
-          const KrazDashboard(),
+          const HomePage(),
+
 
     );
 
+
   }
+
 
 }
 
@@ -68,16 +106,24 @@ class KrazApp extends StatelessWidget {
 
 
 
-class KrazDashboard extends StatefulWidget {
 
-  const KrazDashboard({
+
+
+class HomePage extends StatefulWidget {
+
+
+  const HomePage({
     super.key,
   });
 
 
+
+
+
   @override
-  State<KrazDashboard> createState() =>
-      _KrazDashboardState();
+  State<HomePage> createState() =>
+      _HomePageState();
+
 
 }
 
@@ -85,16 +131,29 @@ class KrazDashboard extends StatefulWidget {
 
 
 
-class _KrazDashboardState
-    extends State<KrazDashboard> {
+
+
+
+
+class _HomePageState extends State<HomePage> {
+
 
 
   final FlutterTts tts =
       FlutterTts();
 
 
-  final ConversationEngine engine =
-      ConversationEngine();
+
+
+  final MemoryService memoryService =
+      MemoryService();
+
+
+
+
+  late ConversationEngine engine;
+
+
 
 
   final TextEditingController controller =
@@ -102,16 +161,70 @@ class _KrazDashboardState
 
 
 
-  final List<String> messages = [];
+
+
+  String response =
+
+      "Halo. Saya Krazytokratz. "
+      "Anda dapat memanggil saya Kraz.";
 
 
 
 
-  Future<void> speak(String text) async {
+
+  KrazState avatarState =
+      KrazState.ready;
+
+
+
+
+
+
+
+  @override
+  void initState() {
+
+
+    super.initState();
+
+
+
+    engine =
+        ConversationEngine(
+          memoryService,
+        );
+
+
+  }
+
+
+
+
+
+
+
+
+  Future<void> speak(
+      String text,
+  ) async {
+
+
+
+    setState(() {
+
+      avatarState =
+          KrazState.speaking;
+
+    });
+
+
+
+
 
     await tts.setLanguage(
       "id-ID",
     );
+
 
 
     await tts.setSpeechRate(
@@ -119,15 +232,29 @@ class _KrazDashboardState
     );
 
 
+
     await tts.setPitch(
       1.0,
     );
+
 
 
     await tts.speak(
       text,
     );
 
+
+
+
+    setState(() {
+
+      avatarState =
+          KrazState.ready;
+
+    });
+
+
+
   }
 
 
@@ -135,28 +262,17 @@ class _KrazDashboardState
 
 
 
-  Future<void> bicara() async {
 
 
-    await speak(
+  void sendMessage() {
 
-      "Halo. Saya Kraz. "
-      "Sistem inti saya aktif. "
-      "Saya siap menjadi asisten pribadi Anda.",
 
-    );
-
-  }
+    final input =
+        controller.text.trim();
 
 
 
-
-
-
-  void sendMessage() async {
-
-
-    if(controller.text.trim().isEmpty){
+    if(input.isEmpty){
 
       return;
 
@@ -164,15 +280,26 @@ class _KrazDashboardState
 
 
 
-    String userMessage =
-        controller.text;
+
+    setState(() {
+
+      avatarState =
+          KrazState.thinking;
+
+    });
 
 
 
-    String response =
+
+
+
+    final result =
         engine.respond(
-          userMessage,
+          input,
         );
+
+
+
 
 
 
@@ -180,20 +307,8 @@ class _KrazDashboardState
     setState(() {
 
 
-      messages.add(
-
-        "Anda: $userMessage",
-
-      );
-
-
-
-      messages.add(
-
-        "Kraz: $response",
-
-      );
-
+      response =
+          result;
 
 
       controller.clear();
@@ -203,101 +318,17 @@ class _KrazDashboardState
 
 
 
-    await speak(
-      response,
+
+
+
+    speak(
+      result,
     );
+
 
 
   }
 
-
-
-
-
-
-  void memoryCheck(){
-
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-
-      const SnackBar(
-
-        content:
-
-        Text(
-          "Memory System: Foundation Ready",
-        ),
-
-      ),
-
-    );
-
-
-  }
-
-
-
-
-
-
-
-  Widget statusCard(
-
-      IconData icon,
-
-      String title,
-
-      String status,
-
-      ){
-
-
-    return Card(
-
-
-      color:
-          const Color(0xFF13293D),
-
-
-
-      child:
-
-      ListTile(
-
-        leading:
-
-        Icon(
-
-          icon,
-
-          color:
-              Colors.lightBlueAccent,
-
-        ),
-
-
-
-        title:
-
-        Text(
-          title,
-        ),
-
-
-
-        subtitle:
-
-        Text(
-          status,
-        ),
-
-      ),
-
-    );
-
-
-  }
 
 
 
@@ -312,171 +343,37 @@ class _KrazDashboardState
     return Scaffold(
 
 
-      body:
-
-      SafeArea(
+      body: SafeArea(
 
 
-        child:
-
-        Padding(
+        child: Padding(
 
 
           padding:
-
-          const EdgeInsets.all(24),
-
+              const EdgeInsets.all(30),
 
 
-          child:
 
-          Column(
+
+          child: Column(
+
+
+
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+
 
 
             children: [
 
 
 
-              const SizedBox(
-                height:20,
-              ),
 
 
+              KrazAvatar(
 
-
-              const Icon(
-
-                Icons.smart_toy,
-
-                size:80,
-
-                color:
-                    Colors.lightBlueAccent,
-
-              ),
-
-
-
-
-              const SizedBox(
-                height:10,
-              ),
-
-
-
-
-
-              const Text(
-
-                "KRAZ",
-
-                style:
-
-                TextStyle(
-
-                  fontSize:42,
-
-                  fontWeight:
-                      FontWeight.bold,
-
-                  letterSpacing:6,
-
-                ),
-
-              ),
-
-
-
-
-              const Text(
-
-                "Personal AI Assistant",
-
-                style:
-
-                TextStyle(
-
-                  fontSize:18,
-
-                  color:
-                      Colors.white70,
-
-                ),
-
-              ),
-
-
-
-
-              const SizedBox(
-                height:10,
-              ),
-
-
-
-
-              const Text(
-
-                "ONLINE",
-
-                style:
-
-                TextStyle(
-
-                  color:
-                      Colors.greenAccent,
-
-                  fontWeight:
-                      FontWeight.bold,
-
-                ),
-
-              ),
-
-
-
-
-              const SizedBox(
-                height:20,
-              ),
-
-
-
-
-
-              statusCard(
-
-                Icons.badge,
-
-                "Identity Core",
-
-                "Active",
-
-              ),
-
-
-
-
-              statusCard(
-
-                Icons.psychology,
-
-                "Personality Engine",
-
-                "Active",
-
-              ),
-
-
-
-
-              statusCard(
-
-                Icons.memory,
-
-                "Memory System",
-
-                "Foundation Ready",
+                state:
+                    avatarState,
 
               ),
 
@@ -485,251 +382,10 @@ class _KrazDashboardState
 
 
               const SizedBox(
-                height:15,
-              ),
 
-
-
-
-
-
-              Expanded(
-
-
-                child:
-
-                ListView.builder(
-
-
-                  itemCount:
-                      messages.length,
-
-
-
-                  itemBuilder:
-
-                  (context,index){
-
-
-                    return Padding(
-
-
-                      padding:
-
-                      const EdgeInsets.all(8),
-
-
-
-                      child:
-
-                      Text(
-
-                        messages[index],
-
-                        style:
-
-                        const TextStyle(
-
-                          fontSize:16,
-
-                        ),
-
-                      ),
-
-
-                    );
-
-
-                  },
-
-
-                ),
-
+                height: 30,
 
               ),
-
-
-
-
-
-
-              Row(
-
-
-                children:[
-
-
-
-                  Expanded(
-
-
-                    child:
-
-                    TextField(
-
-
-                      controller:
-                          controller,
-
-
-
-                      decoration:
-
-                      const InputDecoration(
-
-
-                        hintText:
-                        "Ketik pesan untuk Kraz",
-
-
-                      ),
-
-
-                    ),
-
-
-                  ),
-
-
-
-
-
-                  IconButton(
-
-
-                    onPressed:
-                    sendMessage,
-
-
-
-                    icon:
-
-                    const Icon(
-                      Icons.send,
-                    ),
-
-
-                  ),
-
-
-                ],
-
-
-              ),
-
-
-
-
-
-
-              const SizedBox(
-                height:10,
-              ),
-
-
-
-
-
-
-              SizedBox(
-
-                width:
-                    double.infinity,
-
-
-
-                child:
-
-                ElevatedButton.icon(
-
-
-                  onPressed:
-                  bicara,
-
-
-
-                  icon:
-
-                  const Icon(
-                    Icons.mic,
-                  ),
-
-
-
-                  label:
-
-                  const Text(
-                    "Berbicara Dengan Kraz",
-                  ),
-
-
-
-                ),
-
-
-              ),
-
-
-
-
-
-
-              const SizedBox(
-                height:8,
-              ),
-
-
-
-
-
-
-              SizedBox(
-
-                width:
-                    double.infinity,
-
-
-
-                child:
-
-                OutlinedButton.icon(
-
-
-                  onPressed:
-                  memoryCheck,
-
-
-
-                  icon:
-
-                  const Icon(
-                    Icons.memory,
-                  ),
-
-
-
-                  label:
-
-                  const Text(
-                    "Cek Memory",
-                  ),
-
-
-
-                ),
-
-
-              ),
-
-
-
-
-
-
-              const SizedBox(
-                height:10,
-              ),
-
 
 
 
@@ -737,17 +393,24 @@ class _KrazDashboardState
 
               Text(
 
-                "Kraz Foundation ${KrazIdentity.version}",
+
+                response,
+
+
+                textAlign:
+                    TextAlign.center,
+
 
 
                 style:
+                    const TextStyle(
 
-                const TextStyle(
+                      fontSize: 18,
 
-                  color:
-                      Colors.white38,
+                      height: 1.5,
 
-                ),
+                    ),
+
 
 
               ),
@@ -755,19 +418,109 @@ class _KrazDashboardState
 
 
 
+
+
+              const SizedBox(
+
+                height: 30,
+
+              ),
+
+
+
+
+
+
+              TextField(
+
+
+                controller:
+                    controller,
+
+
+
+                decoration:
+                    const InputDecoration(
+
+                      hintText:
+                          "Berbicara dengan Kraz",
+
+
+                      border:
+                          OutlineInputBorder(),
+
+
+                    ),
+
+
+
+              ),
+
+
+
+
+
+
+              const SizedBox(
+
+                height: 20,
+
+              ),
+
+
+
+
+
+
+
+              ElevatedButton.icon(
+
+
+
+                onPressed:
+                    sendMessage,
+
+
+
+                icon:
+                    const Icon(
+                      Icons.send,
+                    ),
+
+
+
+
+                label:
+                    const Text(
+                      "Kirim ke Kraz",
+                    ),
+
+
+
+              ),
+
+
+
+
+
             ],
+
 
 
           ),
 
 
+
         ),
+
 
 
       ),
 
 
+
     );
+
 
 
   }
