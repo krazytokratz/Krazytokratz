@@ -5,6 +5,7 @@ import 'memory_priority.dart';
 import 'memory_category.dart';
 import 'persistent_memory.dart';
 import 'memory_intelligence.dart';
+import 'memory_storage.dart';
 
 
 
@@ -14,8 +15,14 @@ class MemoryService {
   final List<Memory> _memories = [];
 
 
+
   final PersistentMemory persistentMemory =
       PersistentMemory();
+
+
+
+  final MemoryStorage storage =
+      MemoryStorage();
 
 
 
@@ -27,22 +34,67 @@ class MemoryService {
 
 
 
+
+  // ==========================
+  // INITIALIZE MEMORY SYSTEM
+  // ==========================
+
+
+  Future<void> initialize() async {
+
+
+    final storedMemories =
+        await storage.load();
+
+
+
+    _memories.clear();
+
+
+
+    _memories.addAll(
+      storedMemories,
+    );
+
+
+
+    debugPrint(
+
+      "Kraz loaded ${_memories.length} memories",
+
+    );
+
+
+  }
+
+
+
+
+
+
+
+
+
   // ==========================
   // SMART MEMORY SAVE
   // ==========================
 
 
-  void saveMemory(
+  Future<void> saveMemory(
 
     Memory memory,
 
-  ) {
+  ) async {
 
 
     final exists =
+
         intelligence.existsSimilar(
+
           _memories,
+
           memory.content,
+
         );
 
 
@@ -51,7 +103,9 @@ class MemoryService {
 
 
       debugPrint(
+
         "Kraz Memory duplicate detected",
+
       );
 
 
@@ -61,12 +115,25 @@ class MemoryService {
 
 
 
+
     _memories.add(
+
       memory,
+
+    );
+
+
+
+    await storage.save(
+
+      _memories,
+
     );
 
 
   }
+
+
 
 
 
@@ -78,11 +145,15 @@ class MemoryService {
 
 
     return List.unmodifiable(
+
       _memories,
+
     );
 
 
   }
+
+
 
 
 
@@ -107,6 +178,8 @@ class MemoryService {
 
 
   }
+
+
 
 
 
@@ -152,6 +225,8 @@ class MemoryService {
 
 
 
+
+
   List<Memory> search(
 
     String keyword,
@@ -169,6 +244,8 @@ class MemoryService {
 
 
   }
+
+
 
 
 
@@ -198,11 +275,13 @@ class MemoryService {
 
 
 
-  void deleteMemory(
+
+
+  Future<void> deleteMemory(
 
     String id,
 
-  ) {
+  ) async {
 
 
     _memories.removeWhere(
@@ -214,7 +293,17 @@ class MemoryService {
     );
 
 
+
+    await storage.save(
+
+      _memories,
+
+    );
+
+
   }
+
+
 
 
 
@@ -228,10 +317,17 @@ class MemoryService {
     _memories.clear();
 
 
+
+    await storage.clear();
+
+
+
     await persistentMemory.clear();
 
 
   }
+
+
 
 
 
@@ -253,6 +349,8 @@ class MemoryService {
 
 
 
+
+
   bool get isEmpty {
 
 
@@ -260,6 +358,8 @@ class MemoryService {
 
 
   }
+
+
 
 
 
@@ -284,7 +384,7 @@ class MemoryService {
 
 
   // ==========================
-  // KRAZ LONG TERM MEMORY
+  // KRAZ LONG TERM KEY MEMORY
   // ==========================
 
 
@@ -314,6 +414,8 @@ class MemoryService {
 
 
 
+
+
   Future<String?> recall(
 
     String key,
@@ -329,6 +431,8 @@ class MemoryService {
 
 
   }
+
+
 
 
 
@@ -358,12 +462,18 @@ class MemoryService {
 
 
 
+
+
   // ==========================
-  // LOAD MEMORY WHEN STARTING
+  // LOAD USER MEMORY
   // ==========================
 
 
   Future<void> loadMemory() async {
+
+
+    await initialize();
+
 
 
     final savedName =
@@ -396,6 +506,8 @@ class MemoryService {
 
 
   }
+
+
 
 
 

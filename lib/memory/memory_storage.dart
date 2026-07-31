@@ -1,53 +1,162 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'memory_model.dart';
+
+
+
 class MemoryStorage {
 
-  final Map<String, String> _memory = {};
 
 
-  void save(
-    String key,
-    String value,
-  ) {
-
-    _memory[key] = value;
-
-  }
+  static const String storageKey =
+      "kraz_memories";
 
 
 
-  String? read(
-    String key,
-  ) {
-
-    return _memory[key];
-
-  }
 
 
 
-  bool contains(
-    String key,
-  ) {
 
-    return _memory.containsKey(key);
+  Future<void> save(
 
-  }
+    List<Memory> memories,
 
+  ) async {
 
 
-  Map<String, String> getAll() {
+    final prefs =
+        await SharedPreferences.getInstance();
 
-    return Map.unmodifiable(
-      _memory,
+
+
+    final jsonList =
+
+        memories
+
+            .map(
+
+              (memory) =>
+
+                  memory.toJson(),
+
+            )
+
+            .toList();
+
+
+
+
+    await prefs.setString(
+
+      storageKey,
+
+      jsonEncode(
+
+        jsonList,
+
+      ),
+
     );
 
+
+  }
+
+
+
+
+
+
+
+  Future<List<Memory>> load() async {
+
+
+    final prefs =
+
+        await SharedPreferences.getInstance();
+
+
+
+    final data =
+
+        prefs.getString(
+
+          storageKey,
+
+        );
+
+
+
+    if(data == null){
+
+      return [];
+
+    }
+
+
+
+
+
+    final List<dynamic> decoded =
+
+        jsonDecode(
+
+          data,
+
+        );
+
+
+
+
+
+    return decoded
+
+        .map(
+
+          (item) =>
+
+              Memory.fromJson(
+
+                item,
+
+              ),
+
+        )
+
+        .toList();
+
+
+
   }
 
 
 
-  void clear() {
 
-    _memory.clear();
+
+
+
+
+  Future<void> clear() async {
+
+
+    final prefs =
+
+        await SharedPreferences.getInstance();
+
+
+
+    await prefs.remove(
+
+      storageKey,
+
+    );
+
 
   }
+
+
+
+
 
 }
