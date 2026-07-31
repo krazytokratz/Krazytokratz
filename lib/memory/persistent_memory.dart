@@ -1,133 +1,125 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 
-
+/// PersistentMemory
+///
+/// Layer penyimpanan permanen Kraz.
+/// Bertugas menyimpan dan mengambil data memory
+/// menggunakan SharedPreferences.
+///
+/// Architecture:
+/// MemoryService
+///      ↓
+/// MemoryRepository
+///      ↓
+/// PersistentMemory
+///      ↓
+/// SharedPreferences (Device Storage)
 
 class PersistentMemory {
 
 
-
+  /// Menyimpan data memory
+  ///
+  /// Contoh:
+  /// save("user_name", "Cen")
+  ///
   Future<void> save(
     String key,
     String value,
   ) async {
 
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-
+    final prefs = await SharedPreferences.getInstance();
 
     await prefs.setString(
       key,
       value,
     );
 
-
-
-    debugPrint(
-      "KRAZ MEMORY SAVED: $key = $value",
-    );
-
-
   }
 
 
 
-
-
-
-
+  /// Membaca data memory
+  ///
+  /// Jika data tidak ditemukan
+  /// maka mengembalikan null
+  ///
   Future<String?> read(
     String key,
   ) async {
 
+    final prefs = await SharedPreferences.getInstance();
 
-    final prefs =
-        await SharedPreferences.getInstance();
-
-
-
-    final result =
-        prefs.getString(
-          key,
-        );
-
-
-
-    debugPrint(
-      "KRAZ MEMORY READ: $key = $result",
+    return prefs.getString(
+      key,
     );
-
-
-
-    return result;
-
 
   }
 
 
 
-
-
-
-
+  /// Mengecek apakah memory tersedia
+  ///
+  /// Return:
+  /// true  = data ada
+  /// false = data tidak ada
+  ///
   Future<bool> exists(
     String key,
   ) async {
 
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-
+    final prefs = await SharedPreferences.getInstance();
 
     return prefs.containsKey(
       key,
     );
 
-
   }
 
 
 
-
-
-
-
-  Future<void> remove(
+  /// Menghapus satu memory tertentu
+  ///
+  /// Contoh:
+  /// delete("user_name")
+  ///
+  Future<void> delete(
     String key,
   ) async {
 
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-
+    final prefs = await SharedPreferences.getInstance();
 
     await prefs.remove(
       key,
     );
 
+  }
+
+
+
+  /// Menghapus seluruh memory
+  ///
+  /// Gunakan hati-hati
+  ///
+  Future<void> clear() async {
+
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.clear();
 
   }
 
 
 
+  /// Mengambil seluruh key memory
+  ///
+  /// Berguna untuk debugging
+  ///
+  Future<Set<String>> keys() async {
 
+    final prefs = await SharedPreferences.getInstance();
 
-
-
-  Future<void> clear() async {
-
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-
-
-    await prefs.clear();
-
+    return prefs.getKeys();
 
   }
 

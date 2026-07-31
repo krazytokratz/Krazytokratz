@@ -2,6 +2,9 @@ import '../core/kraz_identity.dart';
 
 import '../memory/profile_manager.dart';
 import '../memory/memory_analyzer.dart';
+import '../memory/memory_repository.dart';
+import '../memory/memory_model.dart';
+import '../memory/memory_category.dart';
 
 
 
@@ -13,6 +16,11 @@ class ConversationEngine {
 
   final ProfileManager profileManager =
       ProfileManager();
+
+
+
+  final MemoryRepository memoryRepository =
+      MemoryRepository();
 
 
 
@@ -70,6 +78,7 @@ class ConversationEngine {
 
 
 
+
     if(learned) {
 
 
@@ -93,6 +102,69 @@ class ConversationEngine {
 
     final lower =
         message.toLowerCase();
+
+
+
+
+
+
+
+
+    // ==========================
+    // SAVE PROJECT MEMORY
+    // ==========================
+
+
+    if(
+      lower.contains(
+        "membuat aplikasi",
+      ) ||
+      lower.contains(
+        "mengerjakan proyek",
+      ) ||
+      lower.contains(
+        "sedang membuat",
+      )
+    ) {
+
+
+
+      final memory =
+          Memory(
+
+            id:
+                DateTime.now()
+                    .millisecondsSinceEpoch
+                    .toString(),
+
+            content:
+                message,
+
+            category:
+                MemoryCategory.project,
+
+            importance:
+                8,
+
+            createdAt:
+                DateTime.now(),
+
+          );
+
+
+
+      await memoryRepository.saveMemory(
+        memory,
+      );
+
+
+
+      return
+      "Baik.\n"
+      "Saya memahami ini sebagai informasi "
+      "tentang proyek Anda dan akan mengingatnya.";
+
+    }
 
 
 
@@ -172,6 +244,58 @@ class ConversationEngine {
 
 
     // ==========================
+    // PROJECT MEMORY RECALL
+    // ==========================
+
+
+    if(
+      lower.contains(
+        "ingat proyek",
+      ) ||
+      lower.contains(
+        "proyek saya",
+      )
+    ) {
+
+
+
+      final memories =
+          memoryRepository.findByCategory(
+            MemoryCategory.project,
+          );
+
+
+
+      if(memories.isNotEmpty) {
+
+
+
+        return
+
+        "Saya mengingat proyek Anda:\n\n"
+
+        "${memories.last.content}";
+
+
+      }
+
+
+
+      return
+      "Saya belum memiliki informasi "
+      "tentang proyek Anda.";
+
+    }
+
+
+
+
+
+
+
+
+
+    // ==========================
     // USER MEMORY RECALL
     // ==========================
 
@@ -185,9 +309,6 @@ class ConversationEngine {
       ) ||
       lower.contains(
         "apa yang kamu tahu tentang saya",
-      ) ||
-      lower.contains(
-        "apa yang kamu ingat tentang saya",
       )
     ) {
 
@@ -205,8 +326,6 @@ class ConversationEngine {
         "Saya mengenal Anda sebagai "
         "${profile.name}.\n\n"
 
-        "Berikut informasi yang saya ingat:\n\n"
-
         "${profile.summary()}";
 
 
@@ -216,10 +335,8 @@ class ConversationEngine {
 
 
       return
-
       "Saya belum memiliki informasi "
       "yang cukup tentang Anda.";
-
 
     }
 
@@ -257,66 +374,23 @@ class ConversationEngine {
 
 
 
-    // ==========================
-    // PERSONAL RESPONSE
-    // ==========================
-
-
     final name =
         profileManager.profile.name;
 
 
 
-    final style =
-        profileManager
-            .profile
-            .preferredResponseStyle;
-
-
-
-
-
-
-    if(
-      name != null &&
-      style != null
-    ) {
+    if(name != null) {
 
 
       return
 
       "Baik $name.\n\n"
-      "Saya akan menjawab dengan gaya "
-      "$style.\n\n"
-
-      "Saya terus belajar memahami "
-      "cara terbaik membantu Anda.";
-
-
-    }
-
-
-
-
-
-
-
-
-    if(
-      name != null
-    ) {
-
-
-      return
-
-      "Baik $name.\n\n"
-      "Saya memahami pesan Anda.\n"
-      "Saya akan membantu berdasarkan "
+      "Saya memahami pesan Anda "
+      "dan akan membantu berdasarkan "
       "informasi yang sudah saya ingat.";
 
 
     }
-
 
 
 
@@ -329,6 +403,7 @@ class ConversationEngine {
     "Saya memahami pesan Anda.\n"
     "Saya masih belajar menjadi asisten "
     "yang lebih baik.";
+
 
 
 
