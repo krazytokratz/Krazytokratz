@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/kraz_identity.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
-
+  print(
+     "Initializing ${KrazIdentity.name} v${KrazIdentity.version}"
+  );
   runApp(const KrazApp());
 }
 
