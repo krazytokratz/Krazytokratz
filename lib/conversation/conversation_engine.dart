@@ -9,7 +9,6 @@ import '../memory/memory_category.dart';
 
 
 
-
 class ConversationEngine {
 
 
@@ -129,33 +128,59 @@ class ConversationEngine {
 
 
 
+      final now =
+          DateTime.now();
+
+
+
       final memory =
           Memory(
 
-            id:
-                DateTime.now()
-                    .millisecondsSinceEpoch
-                    .toString(),
 
-            content:
-                message,
+            id:
+                now
+                .millisecondsSinceEpoch
+                .toString(),
+
+
 
             category:
                 MemoryCategory.project,
 
+
+
+            key:
+                "project_memory",
+
+
+
+            content:
+                message,
+
+
+
             importance:
                 8,
 
+
+
             createdAt:
-                DateTime.now(),
+                now,
+
+
+
+            updatedAt:
+                now,
 
           );
+
 
 
 
       await memoryRepository.saveMemory(
         memory,
       );
+
 
 
 

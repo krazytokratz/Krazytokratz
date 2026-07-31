@@ -1,25 +1,22 @@
 enum MemoryCategory {
 
 
-  personal,
-
-
-  work,
-
-
-  project,
-
-
-  learning,
+  identity,
 
 
   preference,
 
 
+  project,
+
+
+  knowledge,
+
+
+  relationship,
+
+
   conversation,
-
-
-  system,
 
 
 }
