@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import '../avatar/kraz_avatar.dart';
 import '../conversation/conversation_engine.dart';
-import '../voice/kraz_voice.dart';
+import '../voice/voice_cleaner.dart';
+
 
 
 
@@ -15,12 +17,15 @@ class HomeScreen extends StatefulWidget {
 
 
 
+
   @override
   State<HomeScreen> createState() =>
       _HomeScreenState();
 
 
+
 }
+
 
 
 
@@ -31,8 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+  final FlutterTts tts =
+      FlutterTts();
+
+
+
+
   final TextEditingController controller =
       TextEditingController();
+
 
 
 
@@ -41,16 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-  final KrazVoice voice =
-      KrazVoice();
-
-
 
 
 
   String response =
-      "Halo. Saya Krazytokratz.\n"
+
+      "Halo.\n\n"
+      "Saya Krazytokratz.\n\n"
       "Anda dapat memanggil saya Kraz.";
+
 
 
 
@@ -58,6 +69,119 @@ class _HomeScreenState extends State<HomeScreen> {
 
   KrazState avatarState =
       KrazState.ready;
+
+
+
+
+
+
+
+
+  @override
+  void initState() {
+
+
+    super.initState();
+
+
+    initializeKraz();
+
+
+  }
+
+
+
+
+
+
+
+
+  Future<void> initializeKraz() async {
+
+
+    await engine.initialize();
+
+
+  }
+
+
+
+
+
+
+
+
+
+  Future<void> speak(
+    String text,
+  ) async {
+
+
+
+    setState(() {
+
+
+      avatarState =
+          KrazState.speaking;
+
+
+    });
+
+
+
+
+
+    await tts.setLanguage(
+      "id-ID",
+    );
+
+
+
+
+
+    await tts.setSpeechRate(
+      0.45,
+    );
+
+
+
+
+
+    await tts.setPitch(
+      1.0,
+    );
+
+
+
+
+
+    await tts.speak(
+
+      VoiceCleaner.clean(
+        text,
+      ),
+
+    );
+
+
+
+
+
+
+    setState(() {
+
+
+      avatarState =
+          KrazState.ready;
+
+
+    });
+
+
+
+  }
+
+
 
 
 
@@ -73,26 +197,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+
+
     if(input.isEmpty) {
 
+
       return;
+
 
     }
 
 
 
 
+
+
+
     setState(() {
+
 
       avatarState =
           KrazState.thinking;
+
 
     });
 
 
 
 
+
+
     controller.clear();
+
 
 
 
@@ -115,32 +251,17 @@ class _HomeScreenState extends State<HomeScreen> {
           result;
 
 
-      avatarState =
-          KrazState.speaking;
-
-
     });
 
 
 
 
 
-    await voice.speak(
+
+    await speak(
       result,
     );
 
-
-
-
-
-    setState(() {
-
-
-      avatarState =
-          KrazState.ready;
-
-
-    });
 
 
   }
@@ -154,24 +275,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
 
 
     return Scaffold(
 
 
+
       body: SafeArea(
+
 
 
         child: Padding(
 
 
+
           padding:
-              const EdgeInsets.all(24),
+              const EdgeInsets.all(30),
+
+
 
 
 
           child: Column(
+
 
 
             mainAxisAlignment:
@@ -179,22 +308,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+
             children: [
 
 
 
+
+
               KrazAvatar(
+
                 state:
                     avatarState,
+
               ),
+
 
 
 
 
 
               const SizedBox(
+
                 height: 30,
+
               ),
+
+
+
 
 
 
@@ -203,14 +343,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 response,
 
-
                 textAlign:
                     TextAlign.center,
 
 
+
                 style:
                     const TextStyle(
+
                       fontSize: 18,
+
+                      height: 1.5,
+
                     ),
 
 
@@ -220,17 +364,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+
+
+
               const SizedBox(
+
                 height: 30,
+
               ),
+
+
+
 
 
 
 
               TextField(
 
+
                 controller:
                     controller,
+
 
 
                 decoration:
@@ -252,9 +406,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+
+
+
+
               const SizedBox(
+
                 height: 20,
+
               ),
+
+
+
+
+
 
 
 
@@ -262,8 +427,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ElevatedButton.icon(
 
 
+
                 onPressed:
                     sendMessage,
+
 
 
                 icon:
@@ -275,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 label:
                     const Text(
-                      "Kirim",
+                      "Kirim ke Kraz",
                     ),
 
 
@@ -284,22 +451,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+
+
             ],
+
 
 
           ),
 
 
+
         ),
 
 
+
       ),
+
 
 
     );
 
 
   }
+
+
+
+
+
+
+
+
+
+  @override
+  void dispose() {
+
+
+    controller.dispose();
+
+
+    super.dispose();
+
+
+  }
+
 
 
 

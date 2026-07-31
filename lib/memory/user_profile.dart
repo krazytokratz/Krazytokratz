@@ -5,6 +5,7 @@ import 'dart:convert';
 class UserProfile {
 
 
+
   String? name;
 
   String? nickname;
@@ -18,6 +19,12 @@ class UserProfile {
   String? communicationStyle;
 
   String? preferredLanguage;
+
+  String? preferredResponseStyle;
+
+  String? learningInterest;
+
+
 
 
 
@@ -39,7 +46,13 @@ class UserProfile {
 
     this.preferredLanguage,
 
+    this.preferredResponseStyle,
+
+    this.learningInterest,
+
   });
+
+
 
 
 
@@ -64,6 +77,7 @@ class UserProfile {
 
 
 
+
   void updateNickname(
     String value,
   ) {
@@ -71,6 +85,7 @@ class UserProfile {
     nickname = value;
 
   }
+
 
 
 
@@ -88,6 +103,7 @@ class UserProfile {
 
 
 
+
   void updateCompany(
     String value,
   ) {
@@ -95,6 +111,7 @@ class UserProfile {
     company = value;
 
   }
+
 
 
 
@@ -112,6 +129,7 @@ class UserProfile {
 
 
 
+
   void updateCommunicationStyle(
     String value,
   ) {
@@ -119,6 +137,7 @@ class UserProfile {
     communicationStyle = value;
 
   }
+
 
 
 
@@ -138,6 +157,39 @@ class UserProfile {
 
 
 
+  // ==========================
+  // PERSONAL PREFERENCE
+  // ==========================
+
+
+  void updateResponseStyle(
+    String value,
+  ) {
+
+    preferredResponseStyle = value;
+
+  }
+
+
+
+
+
+
+  void updateLearningInterest(
+    String value,
+  ) {
+
+    learningInterest = value;
+
+  }
+
+
+
+
+
+
+
+
 
   // ==========================
   // CONVERT TO JSON
@@ -149,26 +201,48 @@ class UserProfile {
 
     return jsonEncode({
 
-      "name": name,
 
-      "nickname": nickname,
+      "name":
+          name,
 
-      "occupation": occupation,
 
-      "company": company,
+      "nickname":
+          nickname,
 
-      "interests": interests,
+
+      "occupation":
+          occupation,
+
+
+      "company":
+          company,
+
+
+      "interests":
+          interests,
+
 
       "communicationStyle":
           communicationStyle,
 
+
       "preferredLanguage":
           preferredLanguage,
+
+
+      "preferredResponseStyle":
+          preferredResponseStyle,
+
+
+      "learningInterest":
+          learningInterest,
+
 
     });
 
 
   }
+
 
 
 
@@ -195,6 +269,7 @@ class UserProfile {
 
 
     return UserProfile(
+
 
       name:
           json["name"],
@@ -223,10 +298,20 @@ class UserProfile {
       preferredLanguage:
           json["preferredLanguage"],
 
+
+      preferredResponseStyle:
+          json["preferredResponseStyle"],
+
+
+      learningInterest:
+          json["learningInterest"],
+
+
     );
 
 
   }
+
 
 
 
@@ -245,31 +330,54 @@ class UserProfile {
 
     return """
 
+===== PROFIL KRAZ MEMORY =====
+
+
 Nama:
 ${name ?? "-"}
+
 
 Panggilan:
 ${nickname ?? "-"}
 
+
 Pekerjaan:
 ${occupation ?? "-"}
+
 
 Perusahaan:
 ${company ?? "-"}
 
+
 Minat:
 ${interests ?? "-"}
+
 
 Gaya komunikasi:
 ${communicationStyle ?? "-"}
 
+
 Bahasa:
 ${preferredLanguage ?? "-"}
+
+
+Gaya jawaban:
+${preferredResponseStyle ?? "-"}
+
+
+Minat belajar:
+${learningInterest ?? "-"}
+
+
+==============================
 
 """;
 
 
   }
+
+
+
 
 
 }

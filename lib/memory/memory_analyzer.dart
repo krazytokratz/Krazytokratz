@@ -1,6 +1,7 @@
 import 'user_profile.dart';
 
 
+
 class MemoryAnalyzer {
 
 
@@ -18,9 +19,6 @@ class MemoryAnalyzer {
 
 
 
-  // ==========================
-  // ANALYZE USER MESSAGE
-  // ==========================
 
 
   bool analyze(
@@ -35,9 +33,9 @@ class MemoryAnalyzer {
 
 
 
-    // ======================
-    // NAME DETECTION
-    // ======================
+    // ==========================
+    // NAME
+    // ==========================
 
 
     if(
@@ -66,6 +64,45 @@ class MemoryAnalyzer {
 
       }
 
+    }
+
+
+
+
+
+
+
+
+    // ==========================
+    // NICKNAME
+    // ==========================
+
+
+    if(
+      input.startsWith(
+        "panggil saya",
+      )
+    ) {
+
+
+      final nickname =
+          message
+              .substring(12)
+              .trim();
+
+
+
+      if(nickname.isNotEmpty) {
+
+
+        userProfile.updateNickname(
+          nickname,
+        );
+
+
+        return true;
+
+      }
 
     }
 
@@ -75,9 +112,11 @@ class MemoryAnalyzer {
 
 
 
-    // ======================
-    // JOB DETECTION
-    // ======================
+
+
+    // ==========================
+    // JOB
+    // ==========================
 
 
     if(
@@ -88,13 +127,14 @@ class MemoryAnalyzer {
 
 
       final job =
-          message
-              .toLowerCase()
-              .replaceFirst(
-                "saya bekerja sebagai",
-                "",
-              )
-              .trim();
+          message.replaceFirst(
+            RegExp(
+              "saya bekerja sebagai",
+              caseSensitive: false,
+            ),
+            "",
+          )
+          .trim();
 
 
 
@@ -110,6 +150,93 @@ class MemoryAnalyzer {
 
       }
 
+    }
+
+
+
+
+
+
+
+
+
+    // ==========================
+    // JOB + COMPANY
+    // ==========================
+
+
+    if(
+      input.contains(
+        "saya adalah",
+      ) &&
+      input.contains(
+        "di",
+      )
+    ) {
+
+
+      final data =
+          message.split(
+            RegExp(
+              "di",
+              caseSensitive: false,
+            ),
+          );
+
+
+
+      if(data.length >= 2) {
+
+
+        final job =
+            data[0]
+                .replaceFirst(
+                  RegExp(
+                    "saya adalah",
+                    caseSensitive: false,
+                  ),
+                  "",
+                )
+                .trim();
+
+
+
+        final company =
+            data[1]
+                .trim();
+
+
+
+        if(job.isNotEmpty) {
+
+
+          userProfile.updateOccupation(
+            job,
+          );
+
+
+        }
+
+
+
+
+        if(company.isNotEmpty) {
+
+
+          userProfile.updateCompany(
+            company,
+          );
+
+
+        }
+
+
+
+        return true;
+
+
+      }
+
 
     }
 
@@ -120,9 +247,10 @@ class MemoryAnalyzer {
 
 
 
-    // ======================
-    // COMPANY DETECTION
-    // ======================
+
+    // ==========================
+    // COMPANY
+    // ==========================
 
 
     if(
@@ -133,13 +261,14 @@ class MemoryAnalyzer {
 
 
       final company =
-          message
-              .toLowerCase()
-              .replaceFirst(
-                "saya bekerja di",
-                "",
-              )
-              .trim();
+          message.replaceFirst(
+            RegExp(
+              "saya bekerja di",
+              caseSensitive: false,
+            ),
+            "",
+          )
+          .trim();
 
 
 
@@ -155,7 +284,6 @@ class MemoryAnalyzer {
 
       }
 
-
     }
 
 
@@ -165,9 +293,10 @@ class MemoryAnalyzer {
 
 
 
-    // ======================
-    // INTEREST DETECTION
-    // ======================
+
+    // ==========================
+    // INTEREST
+    // ==========================
 
 
     if(
@@ -178,15 +307,14 @@ class MemoryAnalyzer {
 
 
       final interest =
-          message
-              .replaceFirst(
-                RegExp(
-                  "saya tertarik",
-                  caseSensitive: false,
-                ),
-                "",
-              )
-              .trim();
+          message.replaceFirst(
+            RegExp(
+              "saya tertarik",
+              caseSensitive: false,
+            ),
+            "",
+          )
+          .trim();
 
 
 
@@ -202,8 +330,100 @@ class MemoryAnalyzer {
 
       }
 
+    }
+
+
+
+
+
+
+
+
+
+    // ==========================
+    // RESPONSE STYLE
+    // ==========================
+
+
+    if(
+      input.contains(
+        "saya suka penjelasan",
+      )
+    ) {
+
+
+      final style =
+          message.replaceFirst(
+            RegExp(
+              "saya suka penjelasan",
+              caseSensitive: false,
+            ),
+            "",
+          )
+          .trim();
+
+
+
+      if(style.isNotEmpty) {
+
+
+        userProfile.updateResponseStyle(
+          style,
+        );
+
+
+        return true;
+
+      }
 
     }
+
+
+
+
+
+
+
+
+
+    // ==========================
+    // LEARNING
+    // ==========================
+
+
+    if(
+      input.contains(
+        "saya sedang belajar",
+      )
+    ) {
+
+
+      final learning =
+          message.replaceFirst(
+            RegExp(
+              "saya sedang belajar",
+              caseSensitive: false,
+            ),
+            "",
+          )
+          .trim();
+
+
+
+      if(learning.isNotEmpty) {
+
+
+        userProfile.updateLearningInterest(
+          learning,
+        );
+
+
+        return true;
+
+      }
+
+    }
+
 
 
 
@@ -219,10 +439,6 @@ class MemoryAnalyzer {
 
 
 
-
-  // ==========================
-  // PROFILE INFORMATION
-  // ==========================
 
 
   String getProfileSummary() {
