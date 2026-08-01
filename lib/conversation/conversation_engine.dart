@@ -10,10 +10,12 @@ import '../memory/persistent_memory.dart';
 import 'intent_detector.dart';
 import 'intent_handler.dart';
 import 'response_generator.dart';
+import 'response_style_builder.dart';
 
 
 
 class ConversationEngine {
+
 
 
   final ProfileManager profileManager =
@@ -50,7 +52,13 @@ class ConversationEngine {
 
 
 
+  final ResponseStyleBuilder responseStyleBuilder =
+      ResponseStyleBuilder();
+
+
+
   late MemoryAnalyzer analyzer;
+
 
 
 
@@ -202,21 +210,50 @@ class ConversationEngine {
       ) {
 
 
-        return
+        return responseGenerator.generate(
 
-            "Saya mengenal Anda sebagai "
-            "${profileManager.profile.name}.\n\n"
-            "${profileManager.profile.summary()}";
+          memoryResponse:
+
+              "Saya mengenal Anda sebagai "
+              "${profileManager.profile.name}.\n\n"
+              "${profileManager.profile.summary()}",
+
+
+          defaultResponse:
+
+              "Saya belum memiliki informasi "
+              "yang cukup tentang Anda.",
+
+
+          profile:
+
+              profileManager.profile,
+
+
+        );
 
 
       }
 
 
 
-      return
+      return responseGenerator.generate(
 
-          "Saya belum memiliki informasi "
-          "yang cukup tentang Anda.";
+        memoryResponse: null,
+
+
+        defaultResponse:
+
+            "Saya belum memiliki informasi "
+            "yang cukup tentang Anda.",
+
+
+        profile:
+
+            profileManager.profile,
+
+
+      );
 
 
     }
@@ -240,12 +277,28 @@ class ConversationEngine {
     ) {
 
 
-      return
+      return responseGenerator.generate(
 
-          profileManager.profile.summary();
+        memoryResponse:
+
+            profileManager.profile.summary(),
+
+
+        defaultResponse:
+
+            "Profil belum tersedia.",
+
+
+        profile:
+
+            profileManager.profile,
+
+
+      );
 
 
     }
+
     // ==========================
     // QUICK INTENT RESPONSE
     // ==========================
@@ -266,11 +319,18 @@ class ConversationEngine {
       return responseGenerator.generate(
 
         memoryResponse:
+
             quickResponse,
 
 
         defaultResponse:
+
             "Saya memahami pesan Anda.",
+
+
+        profile:
+
+            profileManager.profile,
 
 
       );
@@ -307,27 +367,34 @@ class ConversationEngine {
     ) {
 
 
-      if (
+      return responseGenerator.generate(
 
-        profileManager.hasName
+        memoryResponse:
 
-      ) {
+            profileManager.hasName
 
-
-        return
+                ?
 
             "Halo ${profileManager.profile.name}.\n"
-            "Senang bertemu kembali.";
+            "Senang bertemu kembali."
+
+                :
+
+            "Halo.\n"
+            "Senang bertemu kembali.",
 
 
-      }
+        defaultResponse:
+
+            "Halo.",
 
 
+        profile:
 
-      return
+            profileManager.profile,
 
-          "Halo.\n"
-          "Senang bertemu kembali.";
+
+      );
 
 
     }
@@ -353,13 +420,48 @@ class ConversationEngine {
     ) {
 
 
-      return
+      return responseGenerator.generate(
 
-          "${KrazIdentity.introduction()}\n\n"
-          "${KrazPersonality.introduction()}";
+        memoryResponse:
+
+            "${KrazIdentity.introduction()}\n\n"
+            "${KrazPersonality.introduction()}",
+
+
+        defaultResponse:
+
+            "Saya adalah Kraz.",
+
+
+        profile:
+
+            profileManager.profile,
+
+
+      );
 
 
     }
+
+
+
+
+
+
+
+
+    // ==========================
+    // RESPONSE STYLE CONTEXT
+    // ==========================
+
+
+    final styleContext =
+
+        responseStyleBuilder.build(
+
+          profileManager.profile,
+
+        );
 
 
 
@@ -373,32 +475,30 @@ class ConversationEngine {
     // ==========================
 
 
-    if (
+    return responseGenerator.generate(
 
-      profileManager.hasName
+      memoryResponse:
 
-    ) {
-
-
-      return
-
-          "Baik ${profileManager.profile.name}.\n\n"
+          "$styleContext\n\n"
+          "Baik ${profileManager.profile.name ?? ""}.\n"
           "Saya memahami pesan Anda "
           "dan akan membantu berdasarkan "
-          "informasi yang sudah saya ingat.";
+          "informasi yang sudah saya ingat.",
 
 
-    }
+      defaultResponse:
+
+          "Saya memahami pesan Anda.\n"
+          "Saya masih belajar menjadi asisten "
+          "yang lebih baik.",
 
 
+      profile:
+
+          profileManager.profile,
 
 
-
-    return
-
-        "Saya memahami pesan Anda.\n"
-        "Saya masih belajar menjadi asisten "
-        "yang lebih baik.";
+    );
 
 
   }
