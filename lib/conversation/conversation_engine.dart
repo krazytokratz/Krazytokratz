@@ -1,4 +1,5 @@
 import '../core/kraz_identity.dart';
+import '../core/kraz_personality.dart';
 
 import '../memory/profile_manager.dart';
 import '../memory/memory_analyzer.dart';
@@ -75,6 +76,8 @@ class ConversationEngine {
 
 
 
+
+
   Future<void> initialize() async {
 
 
@@ -135,6 +138,13 @@ class ConversationEngine {
 
 
 
+
+
+    // ==========================
+    // LEARN USER INFORMATION
+    // ==========================
+
+
     final learned =
         analyzer.analyze(
 
@@ -164,6 +174,12 @@ class ConversationEngine {
 
 
 
+
+
+
+    // ==========================
+    // USER PROFILE MEMORY
+    // ==========================
 
 
     if (
@@ -211,6 +227,12 @@ class ConversationEngine {
 
 
 
+
+    // ==========================
+    // PROFILE REQUEST
+    // ==========================
+
+
     if (
 
       lower.contains("profil saya")
@@ -224,11 +246,9 @@ class ConversationEngine {
 
 
     }
-
-
-
-
-
+    // ==========================
+    // QUICK INTENT RESPONSE
+    // ==========================
 
 
     final quickResponse =
@@ -262,6 +282,12 @@ class ConversationEngine {
 
 
 
+
+
+
+    // ==========================
+    // GREETING
+    // ==========================
 
 
     if (
@@ -312,6 +338,12 @@ class ConversationEngine {
 
 
 
+
+    // ==========================
+    // KRAZ IDENTITY + PERSONALITY
+    // ==========================
+
+
     if (
 
       lower.contains("siapa kamu") ||
@@ -323,7 +355,8 @@ class ConversationEngine {
 
       return
 
-          KrazIdentity.introduction();
+          "${KrazIdentity.introduction()}\n\n"
+          "${KrazPersonality.introduction()}";
 
 
     }
@@ -332,6 +365,12 @@ class ConversationEngine {
 
 
 
+
+
+
+    // ==========================
+    // DEFAULT RESPONSE
+    // ==========================
 
 
     if (
