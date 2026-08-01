@@ -1,6 +1,11 @@
 import '../conversation/conversation_engine.dart';
 
+import '../memory/conversation_memory.dart';
+import '../memory/conversation_repository.dart';
+
 import 'chat_message.dart';
+
+
 
 
 
@@ -14,8 +19,17 @@ class ChatController {
 
 
 
+  final ConversationRepository conversationRepository =
+      ConversationRepository();
+
+
+
+
   final List<ChatMessage> messages =
       [];
+
+
+
 
 
 
@@ -28,7 +42,75 @@ class ChatController {
     await engine.initialize();
 
 
+
+    await conversationRepository.load();
+
+
+
+
+    _loadHistory();
+
+
   }
+
+
+
+
+
+
+
+
+
+  void _loadHistory() {
+
+
+    messages.clear();
+
+
+
+
+    for(final item in conversationRepository.getAll()) {
+
+
+
+      messages.add(
+
+        ChatMessage(
+
+          text:
+
+              item.message,
+
+
+          sender:
+
+              item.role == "user"
+
+                  ?
+
+              MessageSender.user
+
+                  :
+
+              MessageSender.kraz,
+
+
+          time:
+
+              item.createdAt,
+
+
+        ),
+
+      );
+
+
+    }
+
+
+  }
+
+
 
 
 
@@ -73,6 +155,45 @@ class ChatController {
 
 
 
+    await conversationRepository.addMessage(
+
+      ConversationMemory(
+
+        id:
+
+            DateTime.now()
+
+                .millisecondsSinceEpoch
+
+                .toString(),
+
+
+        role:
+
+            "user",
+
+
+        message:
+
+            text,
+
+
+        createdAt:
+
+            DateTime.now(),
+
+
+      ),
+
+    );
+
+
+
+
+
+
+
+
 
     final response =
 
@@ -88,21 +209,29 @@ class ChatController {
 
 
 
+
     final krazMessage =
 
         ChatMessage(
 
-          text: response,
+          text:
+
+              response,
+
 
           sender:
 
               MessageSender.kraz,
 
+
           time:
 
               DateTime.now(),
 
+
         );
+
+
 
 
 
@@ -112,6 +241,47 @@ class ChatController {
       krazMessage,
 
     );
+
+
+
+
+
+
+
+    await conversationRepository.addMessage(
+
+      ConversationMemory(
+
+        id:
+
+            DateTime.now()
+
+                .millisecondsSinceEpoch
+
+                .toString(),
+
+
+        role:
+
+            "kraz",
+
+
+        message:
+
+            response,
+
+
+        createdAt:
+
+            DateTime.now(),
+
+
+      ),
+
+    );
+
+
+
 
 
 
