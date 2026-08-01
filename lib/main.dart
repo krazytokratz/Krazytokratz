@@ -6,6 +6,10 @@ import 'memory/memory_test.dart';
 import 'memory/project_manager.dart';
 import 'memory/project_initializer.dart';
 
+import 'chat/chat_controller.dart';
+import 'chat/chat_screen.dart';
+
+
 
 
 
@@ -17,18 +21,21 @@ Future<void> main() async {
 
 
 
+
   // ==============================
   // INITIALIZE KRAZ MEMORY SYSTEM
   // ==============================
 
 
   final memory =
+
       PersistentMemory();
 
 
 
 
-  final test =
+  final memoryTest =
+
       MemoryTest(
 
         memory,
@@ -37,8 +44,8 @@ Future<void> main() async {
 
 
 
-  await test.run();
 
+  await memoryTest.run();
 
 
 
@@ -52,12 +59,14 @@ Future<void> main() async {
 
 
   final projectManager =
+
       ProjectManager();
 
 
 
 
   final projectInitializer =
+
       ProjectInitializer();
 
 
@@ -68,6 +77,26 @@ Future<void> main() async {
     projectManager,
 
   );
+
+
+
+
+
+
+
+  // ==============================
+  // INITIALIZE CHAT SYSTEM
+  // ==============================
+
+
+  final chatController =
+
+      ChatController();
+
+
+
+
+  await chatController.initialize();
 
 
 
@@ -88,6 +117,8 @@ Future<void> main() async {
       memory: memory,
 
       projectManager: projectManager,
+
+      chatController: chatController,
 
     ),
 
@@ -114,6 +145,10 @@ class KrazApp extends StatelessWidget {
   final ProjectManager projectManager;
 
 
+  final ChatController chatController;
+
+
+
 
 
 
@@ -127,6 +162,9 @@ class KrazApp extends StatelessWidget {
 
 
     required this.projectManager,
+
+
+    required this.chatController,
 
 
   });
@@ -146,325 +184,50 @@ class KrazApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
 
-      title: "Kraz AI Assistant",
 
-
-
-
-      theme: ThemeData(
-
-
-        primarySwatch: Colors.blue,
-
-
-      ),
-
-
-
-
-
-      home: KrazHomePage(
-
-
-        memory: memory,
-
-
-        projectManager: projectManager,
-
-
-      ),
-
-
-
-    );
-
-
-
-  }
-
-
-
-}
-
-
-
-
-
-
-
-
-
-class KrazHomePage extends StatelessWidget {
-
-
-
-  final PersistentMemory memory;
-
-
-  final ProjectManager projectManager;
-
-
-
-
-
-  const KrazHomePage({
-
-
-    super.key,
-
-
-    required this.memory,
-
-
-    required this.projectManager,
-
-
-  });
-
-
-
-
-
-
-  @override
-  Widget build(BuildContext context) {
-
-
-    return Scaffold(
-
-
-      appBar: AppBar(
-
-
-        title: const Text(
-
+      title:
 
           "Kraz AI Assistant",
 
 
-        ),
 
 
-      ),
 
+      theme:
 
+          ThemeData(
 
 
+            primarySwatch:
 
-      body: Center(
+                Colors.blue,
 
 
-        child: Column(
+          ),
 
 
-          mainAxisAlignment:
 
-              MainAxisAlignment.center,
 
 
-          children: [
+      home:
 
-            const Icon(
+          ChatScreen(
 
-              Icons.memory,
 
-              size: 80,
+            controller:
 
-            ),
+                chatController,
 
 
+          ),
 
-
-
-
-            const SizedBox(
-
-              height: 20,
-
-            ),
-
-
-
-
-
-
-            const Text(
-
-              "Kraz Memory System v1.3.3",
-
-              style: TextStyle(
-
-                fontSize: 22,
-
-                fontWeight: FontWeight.bold,
-
-              ),
-
-            ),
-
-
-
-
-
-
-            const SizedBox(
-
-              height: 30,
-
-            ),
-
-
-
-
-
-
-            FutureBuilder<String?>(
-
-
-              future: memory.read(
-
-                "user_name",
-
-              ),
-
-
-
-              builder: (context, snapshot) {
-
-
-
-                if(snapshot.connectionState ==
-
-                    ConnectionState.waiting) {
-
-
-
-                  return const Text(
-
-                    "Loading User Memory...",
-
-                    style: TextStyle(
-
-                      fontSize: 18,
-
-                    ),
-
-                  );
-
-
-                }
-
-
-
-
-
-                return Text(
-
-
-                  "Remembered User: ${snapshot.data ?? "None"}",
-
-
-                  style: const TextStyle(
-
-
-                    fontSize: 18,
-
-
-                  ),
-
-
-                );
-
-
-
-              },
-
-
-            ),
-
-
-
-
-
-
-            const SizedBox(
-
-              height: 20,
-
-            ),
-
-
-
-
-
-
-            Text(
-
-
-              "Project: "
-
-              "${projectManager.project.name ?? "None"}",
-
-
-              style: const TextStyle(
-
-                fontSize: 18,
-
-              ),
-
-
-            ),
-
-
-
-
-
-
-            const SizedBox(
-
-              height: 10,
-
-            ),
-
-
-
-
-
-
-            Text(
-
-
-              "Status: "
-
-              "${projectManager.project.status ?? "-"}",
-
-
-              style: const TextStyle(
-
-                fontSize: 16,
-
-              ),
-
-
-            ),
-
-
-
-
-
-          ],
-
-
-        ),
-
-
-      ),
 
 
     );
 
 
   }
+
 
 
 }

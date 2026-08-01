@@ -6,6 +6,7 @@ import '../memory/memory_analyzer.dart';
 import '../memory/memory_service.dart';
 import '../memory/memory_repository.dart';
 import '../memory/persistent_memory.dart';
+import '../memory/project_manager.dart';
 
 import 'intent_detector.dart';
 import 'intent_handler.dart';
@@ -34,6 +35,11 @@ class ConversationEngine {
 
 
   late MemoryRepository memoryRepository;
+
+
+
+  final ProjectManager projectManager =
+      ProjectManager();
 
 
 
@@ -84,12 +90,15 @@ class ConversationEngine {
 
 
 
-
-
   Future<void> initialize() async {
 
 
     await profileManager.load();
+
+
+
+    await projectManager.load();
+
 
 
 
@@ -105,8 +114,8 @@ class ConversationEngine {
     await memoryService.loadMemory();
 
 
-  }
 
+  }
 
 
 
@@ -146,13 +155,6 @@ class ConversationEngine {
 
 
 
-
-
-    // ==========================
-    // LEARN USER INFORMATION
-    // ==========================
-
-
     final learned =
         analyzer.analyze(
 
@@ -183,9 +185,74 @@ class ConversationEngine {
 
 
 
-
-
     // ==========================
+    // PROJECT MEMORY
+    // ==========================
+
+
+    if (
+
+      lower.contains("apa proyek saya") ||
+
+      lower.contains("proyek saya") ||
+
+      lower.contains("ingat proyek saya") ||
+
+      lower.contains("apa yang sedang saya buat")
+
+    ) {
+
+
+      if(projectManager.hasProject) {
+
+
+        return responseGenerator.generate(
+
+          memoryResponse:
+
+              projectManager.summary(),
+
+
+          defaultResponse:
+
+              "Saya belum memiliki informasi "
+              "tentang proyek Anda.",
+
+
+          profile:
+
+              profileManager.profile,
+
+
+        );
+
+
+      }
+
+
+
+      return responseGenerator.generate(
+
+        memoryResponse: null,
+
+
+        defaultResponse:
+
+            "Saya belum memiliki informasi "
+            "tentang proyek Anda.",
+
+
+        profile:
+
+            profileManager.profile,
+
+
+      );
+
+
+    }
+
+        // ==========================
     // USER PROFILE MEMORY
     // ==========================
 
@@ -265,6 +332,7 @@ class ConversationEngine {
 
 
 
+
     // ==========================
     // PROFILE REQUEST
     // ==========================
@@ -299,12 +367,21 @@ class ConversationEngine {
 
     }
 
+
+
+
+
+
+
+
+
     // ==========================
     // QUICK INTENT RESPONSE
     // ==========================
 
 
     final quickResponse =
+
         intentHandler.handle(
 
           intent,
@@ -337,6 +414,7 @@ class ConversationEngine {
 
 
     }
+
 
 
 
@@ -406,8 +484,9 @@ class ConversationEngine {
 
 
 
+
     // ==========================
-    // KRAZ IDENTITY + PERSONALITY
+    // KRAZ IDENTITY
     // ==========================
 
 
@@ -450,6 +529,7 @@ class ConversationEngine {
 
 
 
+
     // ==========================
     // RESPONSE STYLE CONTEXT
     // ==========================
@@ -462,6 +542,7 @@ class ConversationEngine {
           profileManager.profile,
 
         );
+
 
 
 
