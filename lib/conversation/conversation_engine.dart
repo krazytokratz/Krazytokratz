@@ -4,9 +4,6 @@ import '../memory/profile_manager.dart';
 import '../memory/memory_analyzer.dart';
 import '../memory/memory_service.dart';
 import '../memory/memory_repository.dart';
-import '../memory/memory_model.dart';
-import '../memory/memory_category.dart';
-import '../memory/context_builder.dart';
 import '../memory/persistent_memory.dart';
 
 import 'intent_detector.dart';
@@ -37,11 +34,6 @@ class ConversationEngine {
 
 
 
-  final ContextBuilder contextBuilder =
-      ContextBuilder();
-
-
-
   final IntentDetector intentDetector =
       IntentDetector();
 
@@ -61,6 +53,8 @@ class ConversationEngine {
 
 
 
+
+
   ConversationEngine() {
 
 
@@ -75,6 +69,7 @@ class ConversationEngine {
 
 
   }
+
 
 
 
@@ -99,7 +94,6 @@ class ConversationEngine {
     await memoryService.loadMemory();
 
 
-
   }
 
 
@@ -108,13 +102,18 @@ class ConversationEngine {
 
 
 
+
   Future<String> respond(
+
     String input,
+
   ) async {
+
 
 
     final message =
         input.trim();
+
 
 
     final lower =
@@ -122,34 +121,25 @@ class ConversationEngine {
 
 
 
+
+
     final intent =
         intentDetector.detect(
+
           message,
-        );
 
-
-
-    final memories =
-        memoryService.getAllMemories();
-
-
-
-    final context =
-        contextBuilder.build(
-          memories,
         );
 
 
 
 
 
-    // ==========================
-    // LEARN USER INFORMATION
-    // ==========================
 
     final learned =
         analyzer.analyze(
+
           message,
+
         );
 
 
@@ -162,6 +152,7 @@ class ConversationEngine {
 
 
       return
+
           "Baik.\n"
           "Saya memahami informasi tersebut "
           "dan akan mengingatnya.";
@@ -173,228 +164,33 @@ class ConversationEngine {
 
 
 
-    // ==========================
-    // SAVE PROJECT MEMORY
-    // ==========================
+
 
     if (
 
-      lower.contains(
-        "membuat aplikasi",
-      ) ||
+      lower.contains("siapa saya") ||
 
-      lower.contains(
-        "mengerjakan proyek",
-      ) ||
+      lower.contains("siapa nama saya") ||
 
-      lower.contains(
-        "sedang membuat",
-      )
+      lower.contains("ingat saya") ||
+
+      lower.contains("apa yang kamu tahu tentang saya")
 
     ) {
 
 
+      if (
 
-      final now =
-          DateTime.now();
+        profileManager.hasName
 
-
-
-      final memory =
-          Memory(
-
-
-            key:
-                now
-                    .millisecondsSinceEpoch
-                    .toString(),
-
-
-
-            id:
-                now
-                    .millisecondsSinceEpoch
-                    .toString(),
-
-
-
-            content:
-                message,
-
-
-
-            category:
-                MemoryCategory.project,
-
-
-
-            importance:
-                8,
-
-
-
-            createdAt:
-                now,
-
-
-
-            updatedAt:
-                now,
-
-
-          );
-
-
-
-      await memoryRepository.saveMemory(
-        memory,
-      );
-
-
-
-      return
-          "Baik.\n"
-          "Saya memahami ini sebagai informasi "
-          "tentang proyek Anda dan akan mengingatnya.";
-
-
-    }
-
-
-
-
-
-    // ==========================
-    // QUICK INTENT RESPONSE
-    // ==========================
-
-    final quickResponse =
-        intentHandler.handle(
-          intent,
-        );
-
-
-
-    if (quickResponse != null) {
-
-
-      return responseGenerator.generate(
-
-        memoryResponse:
-            quickResponse,
-
-        defaultResponse:
-            "Saya memahami pesan Anda.",
-
-      );
-
-
-    }
-
-
-
-
-
-    // ==========================
-    // GREETING
-    // ==========================
-
-    if (
-
-      lower.contains("halo") ||
-
-      lower.contains("hai") ||
-
-      lower.contains("selamat pagi") ||
-
-      lower.contains("selamat siang") ||
-
-      lower.contains("selamat sore") ||
-
-      lower.contains("selamat malam")
-
-    ) {
-
-
-      if (context.name != null) {
-
-
-        return
-            "Halo ${context.name}.\n"
-            "Senang bertemu kembali.";
-
-
-      }
-
-
-
-      return
-          "Halo.\n"
-          "Senang bertemu kembali.";
-
-
-    }
-
-
-
-
-
-    // ==========================
-    // KRAZ IDENTITY
-    // ==========================
-
-    if (
-
-      lower.contains(
-        "siapa kamu",
-      ) ||
-
-      lower.contains(
-        "siapa dirimu",
-      )
-
-    ) {
-
-
-      return
-          KrazIdentity.introduction();
-
-
-    }
-
-
-
-
-
-    // ==========================
-    // USER MEMORY
-    // ==========================
-
-    if (
-
-      lower.contains(
-        "siapa saya",
-      ) ||
-
-      lower.contains(
-        "ingat saya",
-      ) ||
-
-      lower.contains(
-        "apa yang kamu tahu tentang saya",
-      )
-
-    ) {
-
-
-      if (context.name != null) {
+      ) {
 
 
         return
 
             "Saya mengenal Anda sebagai "
-            "${context.name}.\n\n"
-            "${context.summary()}";
+            "${profileManager.profile.name}.\n\n"
+            "${profileManager.profile.summary()}";
 
 
       }
@@ -413,73 +209,17 @@ class ConversationEngine {
 
 
 
-    // ==========================
-    // PROJECT MEMORY
-    // ==========================
+
 
     if (
 
-      lower.contains(
-        "ingat proyek",
-      ) ||
-
-      lower.contains(
-        "proyek saya",
-      )
-
-    ) {
-
-
-
-      final projects =
-
-          memoryService.findByCategory(
-
-            MemoryCategory.project,
-
-          );
-
-
-
-      if (projects.isNotEmpty) {
-
-
-        return
-
-            "Saya mengingat proyek Anda:\n\n"
-            "${projects.last.content}";
-
-
-      }
-
-
-
-      return
-
-          "Saya belum memiliki informasi "
-          "tentang proyek Anda.";
-
-
-    }
-
-
-
-
-
-    // ==========================
-    // PROFILE
-    // ==========================
-
-    if (
-
-      lower.contains(
-        "profil saya",
-      )
+      lower.contains("profil saya")
 
     ) {
 
 
       return
+
           profileManager.profile.summary();
 
 
@@ -489,26 +229,129 @@ class ConversationEngine {
 
 
 
-    // ==========================
-    // DEFAULT RESPONSE
-    // ==========================
+
+
+    final quickResponse =
+        intentHandler.handle(
+
+          intent,
+
+        );
+
+
+
+    if (quickResponse != null) {
+
+
+      return responseGenerator.generate(
+
+        memoryResponse:
+            quickResponse,
+
+
+        defaultResponse:
+            "Saya memahami pesan Anda.",
+
+
+      );
+
+
+    }
+
+
+
+
+
+
 
     if (
 
-      context.name != null
+      lower.contains("halo") ||
+
+      lower.contains("hai") ||
+
+      lower.contains("selamat pagi") ||
+
+      lower.contains("selamat siang") ||
+
+      lower.contains("selamat sore") ||
+
+      lower.contains("selamat malam")
+
+    ) {
+
+
+      if (
+
+        profileManager.hasName
+
+      ) {
+
+
+        return
+
+            "Halo ${profileManager.profile.name}.\n"
+            "Senang bertemu kembali.";
+
+
+      }
+
+
+
+      return
+
+          "Halo.\n"
+          "Senang bertemu kembali.";
+
+
+    }
+
+
+
+
+
+
+
+    if (
+
+      lower.contains("siapa kamu") ||
+
+      lower.contains("siapa dirimu")
 
     ) {
 
 
       return
 
-          "Baik ${context.name}.\n\n"
+          KrazIdentity.introduction();
+
+
+    }
+
+
+
+
+
+
+
+    if (
+
+      profileManager.hasName
+
+    ) {
+
+
+      return
+
+          "Baik ${profileManager.profile.name}.\n\n"
           "Saya memahami pesan Anda "
           "dan akan membantu berdasarkan "
           "informasi yang sudah saya ingat.";
 
 
     }
+
+
 
 
 
