@@ -1,32 +1,102 @@
 import 'package:flutter/material.dart';
 
-import 'conversation/kraz_chat_controller.dart';
+import 'memory/persistent_memory.dart';
+import 'memory/memory_test.dart';
+
+import 'memory/project_manager.dart';
+import 'memory/project_initializer.dart';
+
 
 
 
 Future<void> main() async {
 
+
   WidgetsFlutterBinding.ensureInitialized();
 
 
-  final controller =
-      KrazChatController();
 
 
-  await controller.initialize();
+  // ==============================
+  // INITIALIZE KRAZ MEMORY SYSTEM
+  // ==============================
+
+
+  final memory =
+      PersistentMemory();
+
+
+
+
+  final test =
+      MemoryTest(
+
+        memory,
+
+      );
+
+
+
+  await test.run();
+
+
+
+
+
+
+
+
+  // ==============================
+  // INITIALIZE PROJECT MEMORY
+  // ==============================
+
+
+  final projectManager =
+      ProjectManager();
+
+
+
+
+  final projectInitializer =
+      ProjectInitializer();
+
+
+
+
+  await projectInitializer.initialize(
+
+    projectManager,
+
+  );
+
+
+
+
+
+
+
+
+  // ==============================
+  // START KRAZ APP
+  // ==============================
 
 
   runApp(
 
     KrazApp(
 
-      controller: controller,
+      memory: memory,
+
+      projectManager: projectManager,
 
     ),
 
   );
 
+
 }
+
+
 
 
 
@@ -37,17 +107,32 @@ Future<void> main() async {
 class KrazApp extends StatelessWidget {
 
 
-  final KrazChatController controller;
+
+  final PersistentMemory memory;
+
+
+  final ProjectManager projectManager;
+
+
 
 
 
   const KrazApp({
 
+
     super.key,
 
-    required this.controller,
+
+    required this.memory,
+
+
+    required this.projectManager,
+
 
   });
+
+
+
 
 
 
@@ -57,39 +142,46 @@ class KrazApp extends StatelessWidget {
 
     return MaterialApp(
 
+
       debugShowCheckedModeBanner: false,
 
 
-      title:
-          "Kraz AI Assistant",
+      title: "Kraz AI Assistant",
 
 
 
-      theme:
-          ThemeData(
 
-            brightness:
-                Brightness.dark,
+      theme: ThemeData(
 
-            primarySwatch:
-                Colors.blue,
 
-          ),
+        primarySwatch: Colors.blue,
+
+
+      ),
 
 
 
-      home:
-          KrazChatPage(
 
-            controller:
-                controller,
 
-          ),
+      home: KrazHomePage(
+
+
+        memory: memory,
+
+
+        projectManager: projectManager,
+
+
+      ),
+
+
 
     );
 
 
+
   }
+
 
 
 }
@@ -100,136 +192,34 @@ class KrazApp extends StatelessWidget {
 
 
 
-class KrazChatPage extends StatefulWidget {
 
 
-  final KrazChatController controller;
+class KrazHomePage extends StatelessWidget {
 
 
 
-  const KrazChatPage({
+  final PersistentMemory memory;
+
+
+  final ProjectManager projectManager;
+
+
+
+
+
+  const KrazHomePage({
+
 
     super.key,
 
-    required this.controller,
+
+    required this.memory,
+
+
+    required this.projectManager,
+
 
   });
-
-
-
-  @override
-  State<KrazChatPage> createState() =>
-      _KrazChatPageState();
-
-
-}
-
-
-
-
-
-
-
-class _KrazChatPageState
-    extends State<KrazChatPage> {
-
-
-  final TextEditingController inputController =
-      TextEditingController();
-
-
-
-  final List<_ChatMessage> messages =
-      [];
-
-
-
-  bool loading =
-      false;
-
-
-
-
-
-
-
-  Future<void> sendMessage() async {
-
-
-    final text =
-        inputController.text.trim();
-
-
-
-    if (text.isEmpty) {
-
-      return;
-
-    }
-
-
-
-    inputController.clear();
-
-
-
-    setState(() {
-
-      messages.add(
-
-        _ChatMessage(
-
-          text,
-
-          true,
-
-        ),
-
-      );
-
-
-      loading =
-          true;
-
-
-    });
-
-
-
-
-    final response =
-        await widget.controller.sendMessage(
-          text,
-        );
-
-
-
-
-    setState(() {
-
-
-      messages.add(
-
-        _ChatMessage(
-
-          response,
-
-          false,
-
-        ),
-
-      );
-
-
-      loading =
-          false;
-
-
-    });
-
-
-  }
-
 
 
 
@@ -243,235 +233,238 @@ class _KrazChatPageState
     return Scaffold(
 
 
-      appBar:
-          AppBar(
-
-            title:
-                const Text(
-
-                  "Kraz AI Assistant",
-
-                ),
-
-          ),
+      appBar: AppBar(
 
 
+        title: const Text(
 
 
-      body:
-          Column(
+          "Kraz AI Assistant",
 
-            children: [
+
+        ),
+
+
+      ),
 
 
 
-              Expanded(
-
-                child:
-                    ListView.builder(
-
-                      padding:
-                          const EdgeInsets.all(12),
 
 
-
-                      itemCount:
-                          messages.length,
+      body: Center(
 
 
-
-                      itemBuilder:
-                          (context,index){
+        child: Column(
 
 
-                            final message =
-                                messages[index];
+          mainAxisAlignment:
+
+              MainAxisAlignment.center,
 
 
+          children: [
 
-                            return Align(
+            const Icon(
 
-                              alignment:
-                                  message.user
+              Icons.memory,
 
-                                  ? Alignment.centerRight
+              size: 80,
 
-                                  : Alignment.centerLeft,
+            ),
 
 
 
-                              child:
-                                  Container(
-
-                                    margin:
-                                        const EdgeInsets.symmetric(
-
-                                          vertical: 5,
-
-                                        ),
 
 
 
-                                    padding:
-                                        const EdgeInsets.all(12),
+            const SizedBox(
+
+              height: 20,
+
+            ),
 
 
 
-                                    decoration:
-                                        BoxDecoration(
-
-                                          color:
-                                              message.user
-
-                                              ? Colors.blue
-
-                                              : Colors.grey[800],
 
 
 
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+            const Text(
 
-                                        ),
+              "Kraz Memory System v1.3.3",
 
+              style: TextStyle(
 
+                fontSize: 22,
 
-                                    child:
-                                        Text(
+                fontWeight: FontWeight.bold,
 
-                                          message.text,
+              ),
 
-                                        ),
-
-                                  ),
-
-                            );
+            ),
 
 
-                      },
+
+
+
+
+            const SizedBox(
+
+              height: 30,
+
+            ),
+
+
+
+
+
+
+            FutureBuilder<String?>(
+
+
+              future: memory.read(
+
+                "user_name",
+
+              ),
+
+
+
+              builder: (context, snapshot) {
+
+
+
+                if(snapshot.connectionState ==
+
+                    ConnectionState.waiting) {
+
+
+
+                  return const Text(
+
+                    "Loading User Memory...",
+
+                    style: TextStyle(
+
+                      fontSize: 18,
 
                     ),
 
-              ),
+                  );
+
+
+                }
 
 
 
 
 
-              if (loading)
-
-                const Padding(
-
-                  padding:
-                      EdgeInsets.all(8),
-
-                  child:
-                      Text(
-
-                        "Kraz sedang berpikir...",
-
-                      ),
-
-                ),
+                return Text(
 
 
+                  "Remembered User: ${snapshot.data ?? "None"}",
 
 
-
-              Row(
-
-                children: [
+                  style: const TextStyle(
 
 
+                    fontSize: 18,
 
-                  Expanded(
-
-                    child:
-                        TextField(
-
-                          controller:
-                              inputController,
-
-
-
-                          decoration:
-                              const InputDecoration(
-
-                                hintText:
-                                    "Tulis pesan...",
-
-
-                                contentPadding:
-                                    EdgeInsets.all(12),
-
-                              ),
-
-                        ),
 
                   ),
 
 
+                );
 
 
 
-                  IconButton(
+              },
 
-                    icon:
-                        const Icon(
 
-                          Icons.send,
-
-                        ),
+            ),
 
 
 
-                    onPressed:
-                        sendMessage,
-
-                  ),
 
 
-                ],
+
+            const SizedBox(
+
+              height: 20,
+
+            ),
+
+
+
+
+
+
+            Text(
+
+
+              "Project: "
+
+              "${projectManager.project.name ?? "None"}",
+
+
+              style: const TextStyle(
+
+                fontSize: 18,
 
               ),
 
 
-            ],
+            ),
 
-          ),
+
+
+
+
+
+            const SizedBox(
+
+              height: 10,
+
+            ),
+
+
+
+
+
+
+            Text(
+
+
+              "Status: "
+
+              "${projectManager.project.status ?? "-"}",
+
+
+              style: const TextStyle(
+
+                fontSize: 16,
+
+              ),
+
+
+            ),
+
+
+
+
+
+          ],
+
+
+        ),
+
+
+      ),
 
 
     );
 
 
   }
-
-
-}
-
-
-
-
-
-
-
-class _ChatMessage {
-
-
-  final String text;
-
-
-  final bool user;
-
-
-
-  _ChatMessage(
-
-    this.text,
-
-    this.user,
-
-  );
 
 
 }
