@@ -4,26 +4,22 @@ import 'memory_service.dart';
 import 'persistent_memory.dart';
 
 
-
-
-
 class MemoryRepository {
 
 
+  final MemoryService memoryService;
 
-  final MemoryService memoryService =
-      MemoryService();
-
-
-
-  final PersistentMemory persistentMemory =
-      PersistentMemory();
+  final PersistentMemory persistentMemory;
 
 
 
+  MemoryRepository({
 
+    required this.memoryService,
 
+    required this.persistentMemory,
 
+  });
 
 
 
@@ -37,7 +33,6 @@ class MemoryRepository {
     );
 
 
-
     await persistentMemory.save(
       memory.id,
       memory.content,
@@ -49,11 +44,6 @@ class MemoryRepository {
 
 
 
-
-
-
-
-
   List<Memory> getMemories() {
 
 
@@ -61,11 +51,6 @@ class MemoryRepository {
 
 
   }
-
-
-
-
-
 
 
 
@@ -85,11 +70,6 @@ class MemoryRepository {
 
 
 
-
-
-
-
-
   Future<String?> recall(
     String id,
   ) async {
@@ -101,11 +81,6 @@ class MemoryRepository {
 
 
   }
-
-
-
-
-
 
 
 
@@ -123,15 +98,11 @@ class MemoryRepository {
     await persistentMemory.save(
       id,
       "",
+
     );
 
 
   }
-
-
-
-
-
 
 
 
@@ -147,46 +118,16 @@ class MemoryRepository {
 
 
 
-
-
-
-
-
-  // ==========================
-  // LOAD MEMORY
-  // ==========================
-
-
   Future<void> loadMemory() async {
 
 
-    /*
-    
-    Placeholder untuk memory restoration.
-
-    Pada tahap berikutnya kita akan membuat
-    PersistentMemory menyimpan daftar Memory
-    lengkap dalam bentuk JSON.
-
-    Struktur:
-
-    Storage
-       |
-       ↓
-    Memory List
-       |
-       ↓
-    MemoryService
-
-    */
+    // Future:
+    // Restore memory JSON
+    // dari PersistentMemory
+    // ke MemoryService
 
 
   }
-
-
-
-
-
 
 
 }

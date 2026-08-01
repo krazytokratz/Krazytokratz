@@ -424,11 +424,82 @@ class MemoryAnalyzer {
 
     }
 
+// ==========================
+// NAME (BERNAMA)
+// ==========================
 
+if (input.startsWith("saya bernama")) {
+  final name = message.substring(12).trim();
 
+  if (name.isNotEmpty) {
+    userProfile.updateName(name);
+    return true;
+  }
+}
 
+// ==========================
+// FULL NAME
+// ==========================
 
+if (input.startsWith("nama lengkap saya")) {
+  final name = message.substring(18).trim();
 
+  if (name.isNotEmpty) {
+    userProfile.updateName(name);
+    return true;
+  }
+}
+
+// ==========================
+// PROJECT
+// ==========================
+
+if (input.startsWith("saya sedang membuat")) {
+
+  final project =
+      message.substring(20).trim();
+
+  if (project.isNotEmpty) {
+
+    userProfile.updateProject(project);
+
+    return true;
+  }
+}
+
+// ==========================
+// PROJECT DEVELOPMENT
+// ==========================
+
+if (input.startsWith("saya mengembangkan")) {
+
+  final project =
+      message.substring(19).trim();
+
+  if (project.isNotEmpty) {
+
+    userProfile.updateProject(project);
+
+    return true;
+  }
+}
+
+// ==========================
+// HOBBY
+// ==========================
+
+if (input.startsWith("hobi saya")) {
+
+  final hobby =
+      message.substring(9).trim();
+
+  if (hobby.isNotEmpty) {
+
+    userProfile.updateHobby(hobby);
+
+    return true;
+  }
+}
 
     return false;
 

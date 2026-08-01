@@ -7,20 +7,19 @@ import '../memory/memory_repository.dart';
 import '../memory/memory_model.dart';
 import '../memory/memory_category.dart';
 import '../memory/context_builder.dart';
+import '../memory/persistent_memory.dart';
+
+import 'intent_detector.dart';
+import 'intent_handler.dart';
+import 'response_generator.dart';
 
 
 
 class ConversationEngine {
 
 
-
   final ProfileManager profileManager =
       ProfileManager();
-
-
-
-  final MemoryRepository memoryRepository =
-      MemoryRepository();
 
 
 
@@ -29,8 +28,32 @@ class ConversationEngine {
 
 
 
+  final PersistentMemory persistentMemory =
+      PersistentMemory();
+
+
+
+  late MemoryRepository memoryRepository;
+
+
+
   final ContextBuilder contextBuilder =
       ContextBuilder();
+
+
+
+  final IntentDetector intentDetector =
+      IntentDetector();
+
+
+
+  final IntentHandler intentHandler =
+      IntentHandler();
+
+
+
+  final ResponseGenerator responseGenerator =
+      ResponseGenerator();
 
 
 
@@ -38,7 +61,20 @@ class ConversationEngine {
 
 
 
+  ConversationEngine() {
 
+
+    memoryRepository =
+        MemoryRepository(
+
+          memoryService: memoryService,
+
+          persistentMemory: persistentMemory,
+
+        );
+
+
+  }
 
 
 
@@ -47,13 +83,11 @@ class ConversationEngine {
   Future<void> initialize() async {
 
 
-
     await profileManager.load();
 
 
 
     analyzer =
-
         MemoryAnalyzer(
 
           profileManager.profile,
@@ -74,75 +108,53 @@ class ConversationEngine {
 
 
 
-
-
   Future<String> respond(
-
     String input,
-
   ) async {
 
 
-
     final message =
-
         input.trim();
 
 
-
-
     final lower =
-
         message.toLowerCase();
 
 
 
+    final intent =
+        intentDetector.detect(
+          message,
+        );
 
 
 
     final memories =
-
         memoryService.getAllMemories();
 
 
 
-
-
-
     final context =
-
         contextBuilder.build(
-
           memories,
-
         );
 
 
 
 
 
-
-
-
-
     // ==========================
-    // LEARN INFORMATION
+    // LEARN USER INFORMATION
     // ==========================
-
 
     final learned =
-
         analyzer.analyze(
-
           message,
-
         );
 
 
 
-
-
-    if(learned) {
+    if (learned) {
 
 
       await profileManager.save();
@@ -150,20 +162,12 @@ class ConversationEngine {
 
 
       return
-
-      "Baik.\n"
-
-      "Saya memahami informasi tersebut "
-
-      "dan akan mengingatnya.";
-
+          "Baik.\n"
+          "Saya memahami informasi tersebut "
+          "dan akan mengingatnya.";
 
 
     }
-
-
-
-
 
 
 
@@ -173,123 +177,85 @@ class ConversationEngine {
     // SAVE PROJECT MEMORY
     // ==========================
 
-
-    if(
+    if (
 
       lower.contains(
-
         "membuat aplikasi",
-
       ) ||
 
       lower.contains(
-
         "mengerjakan proyek",
-
       ) ||
 
       lower.contains(
-
         "sedang membuat",
-
       )
 
     ) {
 
 
 
-
-
       final now =
-
           DateTime.now();
 
 
 
-
-
       final memory =
-
           Memory(
 
 
             key:
-
                 now
-
                     .millisecondsSinceEpoch
-
                     .toString(),
 
 
 
             id:
-
                 now
-
                     .millisecondsSinceEpoch
-
                     .toString(),
 
 
 
             content:
-
                 message,
 
 
 
             category:
-
                 MemoryCategory.project,
 
 
 
             importance:
-
                 8,
 
 
 
             createdAt:
-
                 now,
 
 
 
             updatedAt:
-
                 now,
-
 
 
           );
 
 
 
-
-
-
-
-      memoryService.saveMemory(
-
+      await memoryRepository.saveMemory(
         memory,
-
       );
 
 
 
-
-
-
       return
-
-      "Baik.\n"
-
-      "Saya memahami ini sebagai informasi "
-
-      "tentang proyek Anda dan akan mengingatnya.";
-
+          "Baik.\n"
+          "Saya memahami ini sebagai informasi "
+          "tentang proyek Anda dan akan mengingatnya.";
 
 
     }
@@ -297,6 +263,33 @@ class ConversationEngine {
 
 
 
+
+    // ==========================
+    // QUICK INTENT RESPONSE
+    // ==========================
+
+    final quickResponse =
+        intentHandler.handle(
+          intent,
+        );
+
+
+
+    if (quickResponse != null) {
+
+
+      return responseGenerator.generate(
+
+        memoryResponse:
+            quickResponse,
+
+        defaultResponse:
+            "Saya memahami pesan Anda.",
+
+      );
+
+
+    }
 
 
 
@@ -306,47 +299,41 @@ class ConversationEngine {
     // GREETING
     // ==========================
 
-
-    if(
+    if (
 
       lower.contains("halo") ||
 
-      lower.contains("hai")
+      lower.contains("hai") ||
+
+      lower.contains("selamat pagi") ||
+
+      lower.contains("selamat siang") ||
+
+      lower.contains("selamat sore") ||
+
+      lower.contains("selamat malam")
 
     ) {
 
 
-
-      if(context.name != null) {
+      if (context.name != null) {
 
 
         return
-
-        "Halo ${context.name}.\n"
-
-        "Senang bertemu kembali.";
-
+            "Halo ${context.name}.\n"
+            "Senang bertemu kembali.";
 
 
       }
 
 
 
-
-
       return
-
-      "Halo.\n"
-
-      "Senang bertemu kembali.";
-
+          "Halo.\n"
+          "Senang bertemu kembali.";
 
 
     }
-
-
-
-
 
 
 
@@ -356,23 +343,21 @@ class ConversationEngine {
     // KRAZ IDENTITY
     // ==========================
 
-
-    if(
+    if (
 
       lower.contains(
-
         "siapa kamu",
+      ) ||
 
+      lower.contains(
+        "siapa dirimu",
       )
 
     ) {
 
 
-
       return
-
-      KrazIdentity.introduction();
-
+          KrazIdentity.introduction();
 
 
     }
@@ -381,78 +366,48 @@ class ConversationEngine {
 
 
 
-
-
-
-
     // ==========================
-    // USER MEMORY CONTEXT
+    // USER MEMORY
     // ==========================
 
-
-    if(
+    if (
 
       lower.contains(
-
         "siapa saya",
-
       ) ||
 
       lower.contains(
-
         "ingat saya",
-
       ) ||
 
       lower.contains(
-
         "apa yang kamu tahu tentang saya",
-
       )
 
     ) {
 
 
-
-
-
-      if(
-
-        context.name != null
-
-      ) {
-
+      if (context.name != null) {
 
 
         return
 
-        "Saya mengenal Anda sebagai "
-
-        "${context.name}.\n\n"
-
-        "${context.summary()}";
-
+            "Saya mengenal Anda sebagai "
+            "${context.name}.\n\n"
+            "${context.summary()}";
 
 
       }
 
 
 
-
-
       return
 
-      "Saya belum memiliki informasi "
-
-      "yang cukup tentang Anda.";
-
+          "Saya belum memiliki informasi "
+          "yang cukup tentang Anda.";
 
 
     }
-
-
-
-
 
 
 
@@ -462,19 +417,14 @@ class ConversationEngine {
     // PROJECT MEMORY
     // ==========================
 
-
-    if(
+    if (
 
       lower.contains(
-
         "ingat proyek",
-
       ) ||
 
       lower.contains(
-
         "proyek saya",
-
       )
 
     ) {
@@ -491,39 +441,26 @@ class ConversationEngine {
 
 
 
-
-
-      if(projects.isNotEmpty) {
-
+      if (projects.isNotEmpty) {
 
 
         return
 
-        "Saya mengingat proyek Anda:\n\n"
-
-        "${projects.last.content}";
-
+            "Saya mengingat proyek Anda:\n\n"
+            "${projects.last.content}";
 
 
       }
 
 
 
-
-
       return
 
-      "Saya belum memiliki informasi "
-
-      "tentang proyek Anda.";
-
+          "Saya belum memiliki informasi "
+          "tentang proyek Anda.";
 
 
     }
-
-
-
-
 
 
 
@@ -533,23 +470,17 @@ class ConversationEngine {
     // PROFILE
     // ==========================
 
-
-    if(
+    if (
 
       lower.contains(
-
         "profil saya",
-
       )
 
     ) {
 
 
-
       return
-
-      profileManager.profile.summary();
-
+          profileManager.profile.summary();
 
 
     }
@@ -558,49 +489,37 @@ class ConversationEngine {
 
 
 
+    // ==========================
+    // DEFAULT RESPONSE
+    // ==========================
 
+    if (
 
+      context.name != null
 
-
-    if(context.name != null) {
-
+    ) {
 
 
       return
 
-      "Baik ${context.name}.\n\n"
-
-      "Saya memahami pesan Anda "
-
-      "dan akan membantu berdasarkan "
-
-      "informasi yang sudah saya ingat.";
-
+          "Baik ${context.name}.\n\n"
+          "Saya memahami pesan Anda "
+          "dan akan membantu berdasarkan "
+          "informasi yang sudah saya ingat.";
 
 
     }
-
-
-
-
-
 
 
 
     return
 
-    "Saya memahami pesan Anda.\n"
-
-    "Saya masih belajar menjadi asisten "
-
-    "yang lebih baik.";
-
+        "Saya memahami pesan Anda.\n"
+        "Saya masih belajar menjadi asisten "
+        "yang lebih baik.";
 
 
   }
-
-
-
 
 
 }
