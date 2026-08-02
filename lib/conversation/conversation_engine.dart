@@ -7,6 +7,7 @@ import '../memory/memory_service.dart';
 import '../memory/memory_repository.dart';
 import '../memory/persistent_memory.dart';
 import '../memory/project_manager.dart';
+import '../memory/memory_integration_engine.dart';
 
 import 'intent_detector.dart';
 import 'intent_handler.dart';
@@ -43,6 +44,11 @@ class ConversationEngine {
 
 
 
+  final MemoryIntegrationEngine memoryIntegrationEngine =
+      MemoryIntegrationEngine();
+
+
+
   final IntentDetector intentDetector =
       IntentDetector();
 
@@ -70,6 +76,7 @@ class ConversationEngine {
 
 
 
+
   ConversationEngine() {
 
 
@@ -90,6 +97,9 @@ class ConversationEngine {
 
 
 
+
+
+
   Future<void> initialize() async {
 
 
@@ -98,6 +108,10 @@ class ConversationEngine {
 
 
     await projectManager.load();
+
+
+
+    await memoryIntegrationEngine.initialize();
 
 
 
@@ -123,6 +137,8 @@ class ConversationEngine {
 
 
 
+
+
   Future<String> respond(
 
     String input,
@@ -133,6 +149,18 @@ class ConversationEngine {
 
     final message =
         input.trim();
+
+
+
+
+
+    await memoryIntegrationEngine.analyzeAndStore(
+
+      message,
+
+    );
+
+
 
 
 
@@ -149,6 +177,7 @@ class ConversationEngine {
           message,
 
         );
+
 
 
 
@@ -185,9 +214,7 @@ class ConversationEngine {
 
 
 
-    // ==========================
-    // PROJECT MEMORY
-    // ==========================
+
 
 
     if (
@@ -223,7 +250,6 @@ class ConversationEngine {
 
               profileManager.profile,
 
-
         );
 
 
@@ -246,15 +272,17 @@ class ConversationEngine {
 
             profileManager.profile,
 
-
       );
 
 
     }
 
-        // ==========================
-    // USER PROFILE MEMORY
-    // ==========================
+
+
+
+
+
+
 
 
     if (
@@ -270,11 +298,7 @@ class ConversationEngine {
     ) {
 
 
-      if (
-
-        profileManager.hasName
-
-      ) {
+      if(profileManager.hasName) {
 
 
         return responseGenerator.generate(
@@ -295,7 +319,6 @@ class ConversationEngine {
           profile:
 
               profileManager.profile,
-
 
         );
 
@@ -319,7 +342,6 @@ class ConversationEngine {
 
             profileManager.profile,
 
-
       );
 
 
@@ -331,11 +353,6 @@ class ConversationEngine {
 
 
 
-
-
-    // ==========================
-    // PROFILE REQUEST
-    // ==========================
 
 
     if (
@@ -361,7 +378,6 @@ class ConversationEngine {
 
             profileManager.profile,
 
-
       );
 
 
@@ -373,11 +389,6 @@ class ConversationEngine {
 
 
 
-
-
-    // ==========================
-    // QUICK INTENT RESPONSE
-    // ==========================
 
 
     final quickResponse =
@@ -409,7 +420,6 @@ class ConversationEngine {
 
             profileManager.profile,
 
-
       );
 
 
@@ -421,11 +431,6 @@ class ConversationEngine {
 
 
 
-
-
-    // ==========================
-    // GREETING
-    // ==========================
 
 
     if (
@@ -471,7 +476,6 @@ class ConversationEngine {
 
             profileManager.profile,
 
-
       );
 
 
@@ -483,11 +487,6 @@ class ConversationEngine {
 
 
 
-
-
-    // ==========================
-    // KRAZ IDENTITY
-    // ==========================
 
 
     if (
@@ -516,7 +515,6 @@ class ConversationEngine {
 
             profileManager.profile,
 
-
       );
 
 
@@ -528,11 +526,6 @@ class ConversationEngine {
 
 
 
-
-
-    // ==========================
-    // RESPONSE STYLE CONTEXT
-    // ==========================
 
 
     final styleContext =
@@ -551,14 +544,10 @@ class ConversationEngine {
 
 
 
-    // ==========================
-    // DEFAULT RESPONSE
-    // ==========================
-
-
     return responseGenerator.generate(
 
       memoryResponse:
+
 
           "$styleContext\n\n"
           "Baik ${profileManager.profile.name ?? ""}.\n"
@@ -568,6 +557,7 @@ class ConversationEngine {
 
 
       defaultResponse:
+
 
           "Saya memahami pesan Anda.\n"
           "Saya masih belajar menjadi asisten "
