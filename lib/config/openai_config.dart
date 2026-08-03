@@ -1,29 +1,23 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class OpenAIConfig {
+  OpenAIConfig._();
 
   static String get apiKey {
+    final key = dotenv.env['OPENAI_API_KEY'];
 
-    final key =
-        dotenv.env["OPENAI_API_KEY"] ?? "";
-
-    if (key.isEmpty) {
-
+    if (key == null || key.isEmpty) {
       throw Exception(
-        "OPENAI_API_KEY tidak ditemukan pada file .env",
+        'OPENAI_API_KEY tidak ditemukan di file .env',
       );
-
     }
 
     return key;
-
   }
 
-  static String get model {
+  static const String baseUrl =
+      'https://api.openai.com/v1';
 
-    return dotenv.env["OPENAI_MODEL"] ??
-        "gpt-5";
-
-  }
-
+  static const String model =
+      'gpt-5';
 }

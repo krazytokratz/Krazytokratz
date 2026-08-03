@@ -1,176 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'memory/persistent_memory.dart';
-import 'memory/memory_test.dart';
-
-import 'memory/project_manager.dart';
-import 'memory/project_initializer.dart';
+import 'core/kraz_boot.dart';
 
 import 'chat/chat_controller.dart';
 import 'chat/chat_screen.dart';
 
-
-
-
-
 Future<void> main() async {
-
 
   WidgetsFlutterBinding.ensureInitialized();
 
 
-
-
-
-  // ==============================
-  // INITIALIZE KRAZ MEMORY SYSTEM
-  // ==============================
-
-
-  final memory =
-
-      PersistentMemory();
-
-
-
-
-  final memoryTest =
-
-      MemoryTest(
-
-        memory,
-
-      );
-
-
-
-
-  await memoryTest.run();
-
-
-
-
-
-
-
-  // ==============================
-  // INITIALIZE PROJECT MEMORY
-  // ==============================
-
-
-  final projectManager =
-
-      ProjectManager();
-
-
-
-
-  final projectInitializer =
-
-      ProjectInitializer();
-
-
-
-
-  await projectInitializer.initialize(
-
-    projectManager,
-
+  await dotenv.load(
+    fileName: ".env",
   );
 
 
+  final krazBoot =
+      KrazBoot();
 
 
-
-
-
-  // ==============================
-  // INITIALIZE CHAT SYSTEM
-  // ==============================
-
-
-  final chatController =
-
-      ChatController();
-
-
-
-
-  await chatController.initialize();
-
-
-
-
-
-
-
-
-  // ==============================
-  // START KRAZ APP
-  // ==============================
+  await krazBoot.start();
 
 
   runApp(
-
     KrazApp(
-
-      memory: memory,
-
-      projectManager: projectManager,
-
-      chatController: chatController,
-
+      chatController:
+          krazBoot.chatController,
     ),
-
   );
 
-
 }
-
-
-
-
-
-
 
 
 
 class KrazApp extends StatelessWidget {
 
 
-
-  final PersistentMemory memory;
-
-
-  final ProjectManager projectManager;
-
-
   final ChatController chatController;
-
-
-
-
 
 
   const KrazApp({
 
-
     super.key,
-
-
-    required this.memory,
-
-
-    required this.projectManager,
-
 
     required this.chatController,
 
-
   });
-
-
-
 
 
 
@@ -180,54 +56,33 @@ class KrazApp extends StatelessWidget {
 
     return MaterialApp(
 
-
-      debugShowCheckedModeBanner: false,
-
+      debugShowCheckedModeBanner:
+          false,
 
 
       title:
-
           "Kraz AI Assistant",
 
 
-
-
-
       theme:
-
           ThemeData(
 
-
             primarySwatch:
-
                 Colors.blue,
 
-
           ),
-
-
-
 
 
       home:
-
           ChatScreen(
 
-
             controller:
-
                 chatController,
-
 
           ),
 
-
-
     );
 
-
   }
-
-
 
 }
