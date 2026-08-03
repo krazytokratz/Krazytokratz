@@ -1,77 +1,67 @@
-import '../conversation/conversation_engine.dart';
-import '../intent/intent_engine.dart';
-import '../response/response_engine.dart';
+import '../ai/ai_request.dart';
+import '../ai/ai_response.dart';
+import '../ai/ai_service.dart';
+import '../ai/openai_provider.dart';
 
-import 'brain_context.dart';
+import '../conversation/conversation_engine.dart';
 
 class BrainEngine {
+
   final ConversationEngine conversationEngine =
       ConversationEngine();
 
-  final IntentEngine intentEngine =
-      IntentEngine();
-
-  final ResponseEngine responseEngine =
-      const ResponseEngine();
-
-  bool _initialized = false;
+  late AIService aiService;
 
   Future<void> initialize() async {
-    if (_initialized) {
-      return;
-    }
 
     await conversationEngine.initialize();
 
-    _initialized = true;
+    aiService = AIService(
+      provider: OpenAIProvider(),
+    );
+
+    await aiService.initialize();
+
   }
 
+  /// ==========================================================
+  /// Method utama Brain
+  /// ==========================================================
   Future<String> process(
     String message,
   ) async {
-    if (!_initialized) {
-      await initialize();
-    }
 
-    final context = BrainContext(
-      message: message,
-      profileManager:
-          conversationEngine.profileManager,
-      projectManager:
-          conversationEngine.projectManager,
-      timestamp: DateTime.now(),
-    );
+    return await think(message);
 
-    return processContext(
-      context,
-    );
   }
 
-  Future<String> processContext(
-    BrainContext context,
+  /// ==========================================================
+  /// Proses berpikir Brain
+  /// ==========================================================
+  Future<String> think(
+    String message,
   ) async {
-    try {
-      final quickIntent =
-          intentEngine.process(
-        context.message,
-      );
 
-      if (quickIntent != null) {
-        return responseEngine.build(
-          quickIntent,
-        );
-      }
+    final localResponse =
+        await conversationEngine.respond(
+      message,
+    );
 
-      final response =
-          await conversationEngine.respond(
-        context.message,
-      );
-
-      return responseEngine.build(
-        response,
-      );
-    } catch (_) {
-      return responseEngine.errorResponse();
+    if (localResponse.trim().isNotEmpty) {
+      return localResponse;
     }
+
+    final AIResponse response =
+        await aiService.generate(
+
+      AIRequest(
+        prompt: message,
+      ),
+
+    );
+
+    return response.text;
+
   }
+
 }
