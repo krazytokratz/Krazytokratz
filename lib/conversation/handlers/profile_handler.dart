@@ -1,33 +1,21 @@
-import '../../brain/brain_context.dart';
-import '../response_generator.dart';
+import '../../memory/profile_manager.dart';
 
-import 'conversation_handler.dart';
+class ProfileHandler {
+  final ProfileManager profileManager;
 
-class ProfileHandler
-    implements ConversationHandler {
+  ProfileHandler({
+    required this.profileManager,
+  });
 
-  final ResponseGenerator generator =
-      ResponseGenerator();
-
-  @override
   Future<String?> handle(
-    BrainContext context,
+    String message,
   ) async {
-
-    final lower =
-        context.lowercaseMessage;
+    final lower = message.toLowerCase();
 
     if (!lower.contains("profil saya")) {
       return null;
     }
 
-    return generator.generate(
-      memoryResponse:
-          context.profileManager.profile.summary(),
-      defaultResponse:
-          "Profil belum tersedia.",
-      profile:
-          context.profileManager.profile,
-    );
+    return profileManager.profile.summary();
   }
 }

@@ -1,75 +1,40 @@
 import 'intelligent_memory.dart';
 import 'intelligent_memory_repository.dart';
+import 'memory_score.dart';
+import 'memory_scoring_engine.dart';
 
 class IntelligentMemoryRetriever {
   final IntelligentMemoryRepository repository =
       IntelligentMemoryRepository();
+
+  final MemoryScoringEngine scoringEngine =
+      MemoryScoringEngine();
 
   Future<void> initialize() async {
     await repository.load();
   }
 
   Future<String?> recallIdentity() async {
-    await repository.load();
-
-    final memories =
-        repository.findByCategory("Identity");
-
-    if (memories.isEmpty) {
-      return null;
-    }
-
-    return _buildSummary(
+    return _recallCategory(
       "Identity",
-      memories,
     );
   }
 
   Future<String?> recallProject() async {
-    await repository.load();
-
-    final memories =
-        repository.findByCategory("Project");
-
-    if (memories.isEmpty) {
-      return null;
-    }
-
-    return _buildSummary(
+    return _recallCategory(
       "Project",
-      memories,
     );
   }
 
   Future<String?> recallPreference() async {
-    await repository.load();
-
-    final memories =
-        repository.findByCategory("Preference");
-
-    if (memories.isEmpty) {
-      return null;
-    }
-
-    return _buildSummary(
+    return _recallCategory(
       "Preference",
-      memories,
     );
   }
 
   Future<String?> recallLearning() async {
-    await repository.load();
-
-    final memories =
-        repository.findByCategory("Learning");
-
-    if (memories.isEmpty) {
-      return null;
-    }
-
-    return _buildSummary(
+    return _recallCategory(
       "Learning",
-      memories,
     );
   }
 
@@ -83,32 +48,83 @@ class IntelligentMemoryRetriever {
       return null;
     }
 
-    final buffer = StringBuffer();
+    return _buildSummary(
+      "Yang saya ingat tentang Anda",
+      memories,
+    );
+  }
 
-    buffer.writeln(
-      "Berikut yang saya ingat tentang Anda:\n",
+  Future<String?> recallRelevant(
+    String message,
+  ) async {
+    await repository.load();
+
+    final scores =
+        scoringEngine.score(
+      message,
+      repository.getAll(),
     );
 
-    for (final memory in memories) {
+    final top =
+        scoringEngine.top(
+      scores,
+      limit: 5,
+    );
+
+    if (top.isEmpty) {
+      return null;
+    }
+
+    final buffer =
+        StringBuffer();
+
+    buffer.writeln(
+      "Informasi yang paling relevan:\n",
+    );
+
+    for (final MemoryScore item
+        in top) {
       buffer.writeln(
-        "• ${memory.content}",
+        "• ${item.content}",
       );
     }
 
     return buffer.toString();
   }
 
-  String _buildSummary(
+  Future<String?> _recallCategory(
     String category,
-    List<IntelligentMemory> memories,
-  ) {
-    final buffer = StringBuffer();
+  ) async {
+    await repository.load();
 
-    buffer.writeln(
-      "Yang saya ingat pada kategori $category:\n",
+    final memories =
+        repository.findByCategory(
+      category,
     );
 
-    for (final memory in memories) {
+    if (memories.isEmpty) {
+      return null;
+    }
+
+    return _buildSummary(
+      category,
+      memories,
+    );
+  }
+
+  String _buildSummary(
+    String title,
+    List<IntelligentMemory> memories,
+  ) {
+    final buffer =
+        StringBuffer();
+
+    buffer.writeln(
+      "$title:\n",
+    );
+
+    for (final memory
+        in memories) {
       buffer.writeln(
         "• ${memory.content}",
       );

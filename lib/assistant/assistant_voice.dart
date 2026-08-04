@@ -1,11 +1,14 @@
 import 'package:flutter_tts/flutter_tts.dart';
 
+import '../voice/voice_cleaner.dart';
+
 
 class AssistantVoice {
 
 
   final FlutterTts _tts =
       FlutterTts();
+
 
 
 
@@ -36,18 +39,50 @@ class AssistantVoice {
 
 
 
+
+
+
   Future<void> speak(
+
     String text,
+
   ) async {
 
 
     if (text.trim().isEmpty) {
+
       return;
+
     }
 
 
+
+
+    final cleanedText =
+
+        VoiceCleaner.clean(
+
+          text,
+
+        );
+
+
+
+
+    if(cleanedText.isEmpty) {
+
+      return;
+
+    }
+
+
+
+
+
     await _tts.speak(
-      text,
+
+      cleanedText,
+
     );
 
 
@@ -55,9 +90,14 @@ class AssistantVoice {
 
 
 
+
+
+
   Future<void> stop() async {
 
+
     await _tts.stop();
+
 
   }
 

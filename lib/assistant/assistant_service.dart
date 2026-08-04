@@ -4,7 +4,8 @@ import 'assistant_context.dart';
 import 'assistant_result.dart';
 
 class AssistantService {
-  final BrainEngine brain = BrainEngine();
+  final BrainEngine brain =
+      BrainEngine();
 
   bool _initialized = false;
 
@@ -25,7 +26,8 @@ class AssistantService {
       await initialize();
     }
 
-    final response = await brain.process(
+    final response =
+        await brain.process(
       context.message.trim(),
     );
 

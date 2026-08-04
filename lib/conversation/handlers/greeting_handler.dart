@@ -1,40 +1,87 @@
-import '../../brain/brain_context.dart';
-import '../response_generator.dart';
+import '../../memory/profile_manager.dart';
+import '../../memory/project_manager.dart';
 
-import 'conversation_handler.dart';
+class GreetingHandler {
+  final ProfileManager profileManager;
+  final ProjectManager projectManager;
 
-class GreetingHandler
-    implements ConversationHandler {
+  GreetingHandler({
+    required this.profileManager,
+    required this.projectManager,
+  });
 
-  final ResponseGenerator generator =
-      ResponseGenerator();
-
-  @override
   Future<String?> handle(
-    BrainContext context,
+    String message,
   ) async {
-    final lower =
-        context.lowercaseMessage;
+    final lower = message.toLowerCase().trim();
 
-    if (!(lower.contains("halo") ||
-        lower.contains("hai") ||
-        lower.contains("selamat pagi") ||
-        lower.contains("selamat siang") ||
-        lower.contains("selamat sore") ||
-        lower.contains("selamat malam"))) {
+    if (!_isGreeting(lower)) {
       return null;
     }
 
-    return generator.generate(
-      memoryResponse:
-          context.hasUser
-              ? "Halo ${context.profileManager.profile.name}.\n"
-                  "Senang bertemu kembali."
-              : "Halo.\n"
-                  "Senang bertemu kembali.",
-      defaultResponse: "Halo.",
-      profile:
-          context.profileManager.profile,
+    final buffer = StringBuffer();
+
+    buffer.writeln(
+      _greetingByTime(),
     );
+
+    if (profileManager.hasName) {
+      buffer.writeln(
+        "${profileManager.profile.name}.",
+      );
+    }
+
+    buffer.writeln();
+    buffer.writeln(
+      "Senang bertemu kembali.",
+    );
+
+    if (projectManager.hasProject) {
+      buffer.writeln();
+      buffer.writeln(
+        "Terakhir kita sedang mengerjakan:",
+      );
+
+      buffer.writeln(
+        projectManager.summary(),
+      );
+    }
+
+    buffer.writeln();
+    buffer.writeln(
+      "Apa yang ingin kita kerjakan hari ini?",
+    );
+
+    return buffer.toString();
+  }
+
+  bool _isGreeting(
+    String text,
+  ) {
+    return text.contains("halo") ||
+        text.contains("hai") ||
+        text.contains("hi") ||
+        text.contains("selamat pagi") ||
+        text.contains("selamat siang") ||
+        text.contains("selamat sore") ||
+        text.contains("selamat malam");
+  }
+
+  String _greetingByTime() {
+    final hour = DateTime.now().hour;
+
+    if (hour < 11) {
+      return "Selamat pagi";
+    }
+
+    if (hour < 15) {
+      return "Selamat siang";
+    }
+
+    if (hour < 18) {
+      return "Selamat sore";
+    }
+
+    return "Selamat malam";
   }
 }

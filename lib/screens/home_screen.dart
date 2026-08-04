@@ -1,500 +1,204 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 import '../avatar/kraz_avatar.dart';
-import '../conversation/conversation_engine.dart';
-import '../voice/voice_cleaner.dart';
-
-
-
+import '../chat/chat_controller.dart';
+import '../chat/chat_message.dart';
 
 class HomeScreen extends StatefulWidget {
-
-
   const HomeScreen({
     super.key,
   });
 
-
-
-
   @override
   State<HomeScreen> createState() =>
       _HomeScreenState();
-
-
-
 }
 
+class _HomeScreenState
+    extends State<HomeScreen> {
+  final ChatController controller =
+      ChatController();
 
-
-
-
-
-
-class _HomeScreenState extends State<HomeScreen> {
-
-
-
-  final FlutterTts tts =
-      FlutterTts();
-
-
-
-
-  final TextEditingController controller =
+  final TextEditingController
+      inputController =
       TextEditingController();
-
-
-
-
-  final ConversationEngine engine =
-      ConversationEngine();
-
-
-
-
-
-
-  String response =
-
-      "Halo.\n\n"
-      "Saya Krazytokratz.\n\n"
-      "Anda dapat memanggil saya Kraz.";
-
-
-
-
-
 
   KrazState avatarState =
       KrazState.ready;
 
-
-
-
-
-
-
+  bool loading = true;
 
   @override
   void initState() {
-
-
     super.initState();
-
-
-    initializeKraz();
-
-
+    initialize();
   }
 
-
-
-
-
-
-
-
-  Future<void> initializeKraz() async {
-
-
-    await engine.initialize();
-
-
-  }
-
-
-
-
-
-
-
-
-
-  Future<void> speak(
-    String text,
-  ) async {
-
-
+  Future<void> initialize() async {
+    await controller.initialize();
 
     setState(() {
-
-
-      avatarState =
-          KrazState.speaking;
-
-
+      loading = false;
     });
-
-
-
-
-
-    await tts.setLanguage(
-      "id-ID",
-    );
-
-
-
-
-
-    await tts.setSpeechRate(
-      0.45,
-    );
-
-
-
-
-
-    await tts.setPitch(
-      1.0,
-    );
-
-
-
-
-
-    await tts.speak(
-
-      VoiceCleaner.clean(
-        text,
-      ),
-
-    );
-
-
-
-
-
-
-    setState(() {
-
-
-      avatarState =
-          KrazState.ready;
-
-
-    });
-
-
-
   }
 
+  Future<void> send() async {
+    final text =
+        inputController.text.trim();
 
-
-
-
-
-
-
-
-  Future<void> sendMessage() async {
-
-
-    final input =
-        controller.text.trim();
-
-
-
-
-
-    if(input.isEmpty) {
-
-
+    if (text.isEmpty) {
       return;
-
-
     }
 
-
-
-
-
-
+    inputController.clear();
 
     setState(() {
-
-
       avatarState =
           KrazState.thinking;
-
-
     });
 
-
-
-
-
-
-    controller.clear();
-
-
-
-
-
-
-    final result =
-        await engine.respond(
-          input,
-        );
-
-
-
-
-
-
-    setState(() {
-
-
-      response =
-          result;
-
-
-    });
-
-
-
-
-
-
-    await speak(
-      result,
+    await controller.sendMessage(
+      text,
     );
 
-
-
+    setState(() {
+      avatarState =
+          KrazState.ready;
+    });
   }
 
+  Widget buildBubble(
+    ChatMessage message,
+  ) {
+    final isUser =
+        message.sender ==
+            MessageSender.user;
 
-
-
-
-
-
-
+    return Align(
+      alignment: isUser
+          ? Alignment.centerRight
+          : Alignment.centerLeft,
+      child: Container(
+        margin:
+            const EdgeInsets.symmetric(
+          vertical: 6,
+        ),
+        padding:
+            const EdgeInsets.all(
+          12,
+        ),
+        constraints:
+            const BoxConstraints(
+          maxWidth: 320,
+        ),
+        decoration: BoxDecoration(
+          color: isUser
+              ? Colors.blue
+              : Colors.grey.shade300,
+          borderRadius:
+              BorderRadius.circular(
+            16,
+          ),
+        ),
+        child: Text(
+          message.text,
+          style: TextStyle(
+            color: isUser
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(
     BuildContext context,
   ) {
-
+    if (loading) {
+      return const Scaffold(
+        body: Center(
+          child:
+              CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
-
-
-
-      body: SafeArea(
-
-
-
-        child: Padding(
-
-
-
-          padding:
-              const EdgeInsets.all(30),
-
-
-
-
-
-          child: Column(
-
-
-
-            mainAxisAlignment:
-                MainAxisAlignment.center,
-
-
-
-
-            children: [
-
-
-
-
-
-              KrazAvatar(
-
-                state:
-                    avatarState,
-
-              ),
-
-
-
-
-
-
-              const SizedBox(
-
-                height: 30,
-
-              ),
-
-
-
-
-
-
-
-              Text(
-
-                response,
-
-                textAlign:
-                    TextAlign.center,
-
-
-
-                style:
-                    const TextStyle(
-
-                      fontSize: 18,
-
-                      height: 1.5,
-
-                    ),
-
-
-              ),
-
-
-
-
-
-
-
-
-              const SizedBox(
-
-                height: 30,
-
-              ),
-
-
-
-
-
-
-
-              TextField(
-
-
-                controller:
-                    controller,
-
-
-
-                decoration:
-                    const InputDecoration(
-
-                      hintText:
-                          "Berbicara dengan Kraz",
-
-
-                      border:
-                          OutlineInputBorder(),
-
-                    ),
-
-
-              ),
-
-
-
-
-
-
-
-
-
-              const SizedBox(
-
-                height: 20,
-
-              ),
-
-
-
-
-
-
-
-
-
-              ElevatedButton.icon(
-
-
-
-                onPressed:
-                    sendMessage,
-
-
-
-                icon:
-                    const Icon(
-                      Icons.send,
-                    ),
-
-
-
-                label:
-                    const Text(
-                      "Kirim ke Kraz",
-                    ),
-
-
-
-              ),
-
-
-
-
-
-            ],
-
-
-
-          ),
-
-
-
+      appBar: AppBar(
+        title: const Text(
+          "Kraz AI Assistant",
         ),
-
-
-
       ),
-
-
-
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 20,
+          ),
+          KrazAvatar(
+            state: avatarState,
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding:
+                  const EdgeInsets.all(
+                16,
+              ),
+              itemCount:
+                  controller.messages.length,
+              itemBuilder:
+                  (context, index) {
+                return buildBubble(
+                  controller
+                      .messages[index],
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.all(
+              16,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller:
+                        inputController,
+                    decoration:
+                        const InputDecoration(
+                      hintText:
+                          "Berbicara dengan Kraz...",
+                    ),
+                    onSubmitted:
+                        (_) => send(),
+                  ),
+                ),
+                const SizedBox(
+                  width: 12,
+                ),
+                IconButton(
+                  onPressed: send,
+                  icon: const Icon(
+                    Icons.send,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
-
-
   }
-
-
-
-
-
-
-
-
 
   @override
   void dispose() {
-
-
-    controller.dispose();
-
-
+    inputController.dispose();
     super.dispose();
-
-
   }
-
-
-
-
 }

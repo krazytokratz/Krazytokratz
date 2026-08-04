@@ -1,46 +1,35 @@
-import '../../brain/brain_context.dart';
-import '../response_generator.dart';
+import '../../memory/project_manager.dart';
 
-import 'conversation_handler.dart';
+class ProjectHandler {
+  final ProjectManager projectManager;
 
-class ProjectHandler
-    implements ConversationHandler {
+  ProjectHandler({
+    required this.projectManager,
+  });
 
-  final ResponseGenerator generator =
-      ResponseGenerator();
-
-  @override
   Future<String?> handle(
-    BrainContext context,
+    String message,
   ) async {
+    final lower = message.toLowerCase();
 
-    final lower =
-        context.lowercaseMessage;
-
-    if (!(lower.contains("apa proyek saya") ||
-        lower.contains("proyek saya") ||
-        lower.contains("ingat proyek saya") ||
-        lower.contains("apa yang sedang saya buat"))) {
+    if (!_isProjectQuestion(lower)) {
       return null;
     }
 
-    if (!context.hasProject) {
-      return generator.generate(
-        memoryResponse: null,
-        defaultResponse:
-            "Saya belum memiliki informasi tentang proyek Anda.",
-        profile:
-            context.profileManager.profile,
-      );
+    if (!projectManager.hasProject) {
+      return "Saya belum memiliki informasi mengenai proyek Anda.";
     }
 
-    return generator.generate(
-      memoryResponse:
-          context.projectManager.summary(),
-      defaultResponse:
-          "Belum ada proyek.",
-      profile:
-          context.profileManager.profile,
-    );
+    return projectManager.summary();
+  }
+
+  bool _isProjectQuestion(
+    String text,
+  ) {
+    return text.contains("proyek saya") ||
+        text.contains("project saya") ||
+        text.contains("apa proyek saya") ||
+        text.contains("ingat proyek saya") ||
+        text.contains("apa yang sedang saya buat");
   }
 }

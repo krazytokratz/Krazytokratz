@@ -10,12 +10,17 @@ class OpenAIService {
           AppConfig.openAIApiKey,
         );
 
-  Future<String> ask(String question) async {
+  Future<String> ask({
+    required String prompt,
+  }) async {
     try {
-      final response = await _client.responses.create(
+      final response =
+          await _client.responses.create(
         CreateResponseRequest(
-          model: 'gpt-5.5',
-          input: ResponseInput.text(question),
+          model: "gpt-5.5",
+          input: ResponseInput.text(
+            prompt,
+          ),
         ),
       );
 
